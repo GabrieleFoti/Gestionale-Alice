@@ -1,30 +1,20 @@
 import { useState, useEffect } from 'react';
 import MachineCard from './MachineCard';
-import toast from 'react-hot-toast';
-import { fetchWithAuth } from '../utils/api';
+import { useGetCars } from '../hooks/useCars';
 
 const ArchivioView = () => {
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [machines, setMachines] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchMachines = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetchWithAuth('http://localhost:5000/api/cars');
-      if (!response.ok) throw new Error('Errore nel caricamento dell\'archivio');
-      const data = await response.json();
-      const filtered = data.filter(m => m.status === 'completed');
-      setMachines(filtered);
-      if (selectedMachine && !filtered.find(m => m.id === selectedMachine.id)) {
+  const { execute: fetchMachines, loading: isLoading } = useGetCars({
+    filter: (m) => m.status === 'completed',
+    onSuccess: (data) => {
+      setMachines(data);
+      if (selectedMachine && !data.find(m => m.id === selectedMachine.id)) {
         setSelectedMachine(null);
       }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
   useEffect(() => {
     fetchMachines();

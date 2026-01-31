@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
-import { fetchWithAuth } from '../utils/api';
+import { useGetActiveSessions, useStartSession, useStopSession } from '../hooks/useSessions';
+import { useUpdateCar, useCompleteCar } from '../hooks/useCars';
 
 export default function SelectedMachineView({selectedMachine, handleBack, operatorName}) {
 
@@ -9,22 +9,32 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
     const [isWorking, setIsWorking] = useState(false);
     const [noteError, setNoteError] = useState(false);
 
-    useEffect(() => {
-        const checkActiveSession = async () => {
-            try {
-                const response = await fetchWithAuth(`http://localhost:5000/api/sessions/active/${selectedMachine.id}`);
-                if (response.ok) {
-                    const activeSessions = await response.json();
-                    const mySession = activeSessions.find(s => s.operatorName === operatorName);
-                    if (mySession) {
-                        setIsWorking(true);
-                    }
-                }
-            } catch (error) {
-                console.error("Error checking active session:", error);
+    // Hooks for API operations
+    const { execute: checkActiveSessions } = useGetActiveSessions({
+        onSuccess: (activeSessions) => {
+            const mySession = activeSessions.find(s => s.operatorName === operatorName);
+            if (mySession) {
+                setIsWorking(true);
             }
-        };
-        checkActiveSession();
+        }
+    });
+
+    const { execute: startSession } = useStartSession({
+        onSuccess: () => setIsWorking(true)
+    });
+
+    const { execute: stopSession } = useStopSession({
+        onSuccess: () => setIsWorking(false)
+    });
+
+    const { execute: updateCar } = useUpdateCar();
+
+    const { execute: completeCar } = useCompleteCar({
+        onSuccess: () => handleBack()
+    });
+
+    useEffect(() => {
+        checkActiveSessions(selectedMachine.id);
     }, [selectedMachine.id, operatorName]);
 
     const handleNoteChange = (e) => {
@@ -35,44 +45,37 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
     };
 
     const handleWorkToggle = async () => {
-        const url = `http://localhost:5000/api/sessions/${isWorking ? 'stop' : 'start'}`;
-        try {
-            const response = await fetchWithAuth(url, {
-                method: 'POST',
-                body: JSON.stringify({ carId: selectedMachine.id, operatorName })
-            });
-
-            if (response.ok) {
-                setIsWorking(!isWorking);
-                toast.success(isWorking ? 'Lavoro fermato' : 'Lavoro avviato');
-            } else {
-                throw new Error('Errore nella comunicazione col server');
-            }
-        } catch (error) {
-            toast.error(error.message);
+        if (isWorking) {
+            await stopSession(selectedMachine.id, operatorName);
+        } else {
+            await startSession(selectedMachine.id, operatorName);
         }
     };
 
     const handleSave = async () => {
         if(note.length === 0){
             setNoteError(true);
-            return;
+            return false;
         }
         
-        try {
-            const response = await fetchWithAuth(`http://localhost:5000/api/cars/${selectedMachine.id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ note })
-            });
+        await updateCar(selectedMachine.id, { note });
+        return true;
+    };
 
-            if (response.ok) {
-                toast.success('Modifiche salvate');
-            } else {
-                throw new Error('Errore nel salvataggio');
-            }
-        } catch (error) {
-            toast.error(error.message);
+    const handleComplete = async () => {
+        // First, stop working if currently working
+        if (isWorking) {
+            await handleWorkToggle();
         }
+
+        // Save notes
+        const result = await handleSave();
+        if(!result){
+            return;
+        }
+
+        // Set machine status to completed
+        await completeCar(selectedMachine.id);
     };
 
 
@@ -110,6 +113,7 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
               value={note}
               onChange={handleNoteChange}
               placeholder="Inserisci note..."
+              onBlur={handleSave}
             />
           </div>
           </div>
@@ -125,16 +129,10 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
               {isWorking ? 'Fine' : 'Avvia'}
             </button>
             <button 
-              onClick={async () => {
-                if (isWorking) {
-                  await handleWorkToggle();
-                }
-                await handleSave();
-                handleBack();
-              }}
+              onClick={handleComplete}
               className="py-3 w-full text-sm font-bold text-gray-800 bg-white rounded-lg border border-gray-300 shadow-sm transition hover:bg-gray-50"
             >
-              Esci
+              Termina
             </button>
           </div>
         </div>

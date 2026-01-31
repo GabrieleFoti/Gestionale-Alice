@@ -4,6 +4,6 @@ export const operators = [
   { id: 2, name: 'PAOLO' },
   { id: 3, name: 'ALESSANDRO' },
   { id: 4, name: 'TOMMASO' },
-  { id: 5, name: 'ONERO' },
+  { id: 5, name: 'OMERO' },
 ];
 

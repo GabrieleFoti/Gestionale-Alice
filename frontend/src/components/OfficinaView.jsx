@@ -1,31 +1,27 @@
 import { useState, useEffect } from 'react';
 import MachineCard from './MachineCard';
-import toast from 'react-hot-toast';
-import { fetchWithAuth } from '../utils/api';
+import { useGetCars } from '../hooks/useCars';
 
 const OfficinaView = () => {
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [machines, setMachines] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(false);
 
-  const fetchMachines = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetchWithAuth('http://localhost:5000/api/cars');
-      if (!response.ok) throw new Error('Errore nel caricamento delle macchine');
-      const data = await response.json();
-      const filtered = data.filter(m => m.status !== 'completed');
-      setMachines(filtered);
-      if (selectedMachine && !filtered.find(m => m.id === selectedMachine.id)) {
-        setSelectedMachine(null);
+  const { execute: fetchMachines, loading: isLoading } = useGetCars({
+    filter: (m) => m.status !== 'completed',
+    onSuccess: (data) => {
+      setMachines(data);
+      // Update selectedMachine with fresh data if it still exists
+      if (selectedMachine) {
+        const updatedSelected = data.find(m => m.id === selectedMachine.id);
+        if (updatedSelected) {
+          setSelectedMachine(updatedSelected);
+        } else {
+          setSelectedMachine(null);
+        }
       }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
   useEffect(() => {
     fetchMachines();
@@ -42,10 +38,7 @@ const OfficinaView = () => {
     fetchMachines();
   };
 
-  const handleUpdated = (updatedMachine) => {
-    setMachines(prev => prev.map(m => m.id === updatedMachine.id ? updatedMachine : m));
-    setSelectedMachine(updatedMachine);
-  };
+
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { fetchWithAuth } from '../utils/api';
+import { useGetCarSessions } from '../hooks/useSessions';
+import { useCreateCar, useUpdateCar, useDeleteCar, useCompleteCar, useRestoreCar } from '../hooks/useCars';
 
 const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, onDelete, onSuccess }) => {
   const [model, setModel] = useState(machine.model || '');
@@ -8,23 +9,57 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   const [lavorazioni, setLavorazioni] = useState(machine.lavorazioni || '');
   const [note, setNote] = useState(machine.note || '');
   const [photo, setPhoto] = useState(machine.photo || false);
-  const [isSaving, setIsSaving] = useState(false);
   const [sessions, setSessions] = useState([]);
+
+  // Hooks for API operations
+  const { execute: fetchSessions } = useGetCarSessions({
+    onSuccess: (data) => setSessions(data)
+  });
+
+  const { execute: createCar, loading: isCreating } = useCreateCar({
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    }
+  });
+
+  const { execute: updateCar, loading: isUpdating } = useUpdateCar({
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    }
+  });
+
+  const { execute: deleteCar, loading: isDeleting } = useDeleteCar({
+    onSuccess: () => {
+      if (onDelete) onDelete();
+      if (onSuccess) onSuccess();
+    }
+  });
+
+  const { execute: completeCar, loading: isCompleting } = useCompleteCar({
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    }
+  });
+
+  const { execute: restoreCar, loading: isRestoring } = useRestoreCar({
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+    }
+  });
+
+  const isSaving = isCreating || isUpdating || isDeleting || isCompleting || isRestoring;
+
+  useEffect(() => {
+    setModel(machine.model || '');
+    setPlate(machine.plate || '');
+    setLavorazioni(machine.lavorazioni || '');
+    setNote(machine.note || '');
+    setPhoto(machine.photo || false);
+  }, [machine.id]);
 
   useEffect(() => {
     if (!isNew && machine.id) {
-      const fetchSessions = async () => {
-        try {
-          const response = await fetchWithAuth(`http://localhost:5000/api/sessions/car/${machine.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setSessions(data);
-          }
-        } catch (error) {
-          console.error("Error fetching sessions:", error);
-        }
-      };
-      fetchSessions();
+      fetchSessions(machine.id);
     }
   }, [machine.id, isNew]);
 
@@ -36,62 +71,15 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Sei sicuro di voler eliminare questa macchina?')) return;
-
-    setIsSaving(true);
-    try {
-      const response = await fetchWithAuth(`http://localhost:5000/api/cars/${machine.id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Errore durante l\'eliminazione');
-      
-      toast.success('Macchina eliminata');
-      if (onDelete) onDelete();
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    await deleteCar(machine.id);
   };
 
   const handleComplete = async () => {
-    setIsSaving(true);
-    try {
-      const response = await fetchWithAuth(`http://localhost:5000/api/cars/${machine.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'completed' })
-      });
-
-      if (!response.ok) throw new Error('Errore durante il completamento');
-      
-      toast.success('Macchina completata');
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    await completeCar(machine.id);
   };
 
   const handleRestore = async () => {
-    setIsSaving(true);
-    try {
-      const response = await fetchWithAuth(`http://localhost:5000/api/cars/${machine.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'in_progress' })
-      });
-
-      if (!response.ok) throw new Error('Errore durante il ripristino');
-      
-      toast.success('Macchina riportata in lavorazione');
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    await restoreCar(machine.id);
   };
 
   const handleSave = async () => {
@@ -99,27 +87,12 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
       return toast.error('Modello e Targa sono obbligatori');
     }
 
-    setIsSaving(true);
-    try {
-      const url = isNew 
-        ? 'http://localhost:5000/api/cars' 
-        : `http://localhost:5000/api/cars/${machine.id}`;
-      
-      const method = isNew ? 'POST' : 'PUT';
-      
-      const response = await fetchWithAuth(url, {
-        method,
-        body: JSON.stringify({ model, plate, lavorazioni, note, photo })
-      });
-
-      if (!response.ok) throw new Error('Errore durante il salvataggio');
-      
-      toast.success(isNew ? 'Macchina creata' : 'Modifiche salvate');
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsSaving(false);
+    const carData = { model, plate, lavorazioni, note, photo };
+    
+    if (isNew) {
+      await createCar(carData);
+    } else {
+      await updateCar(machine.id, carData);
     }
   };
 
@@ -235,9 +208,9 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
             {/* Session History */}
             <div className="space-y-2">
               <label className="block text-[10px] font-bold text-gray-400 uppercase mb-2">Dettaglio Lavoratori:</label>
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+              <div className="overflow-y-auto pr-2 space-y-2 max-h-40">
                 {sessions.length === 0 ? (
-                  <p className="text-xs text-gray-400 italic">Nessuna sessione registrata</p>
+                  <p className="text-xs italic text-gray-400">Nessuna sessione registrata</p>
                 ) : (
                   sessions.map((session) => (
                     <div key={session.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg border border-gray-100">

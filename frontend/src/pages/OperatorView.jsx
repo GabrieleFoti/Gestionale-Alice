@@ -3,29 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { operators } from '../utils/mockData';
 import OperatorColumn from '../components/OperatorColumn';
-import toast from 'react-hot-toast';
-import { fetchWithAuth } from '../utils/api';
+import { useGetCars } from '../hooks/useCars';
 
 const OperatorView = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [machines, setMachines] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchMachines = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetchWithAuth('http://localhost:5000/api/cars');
-      if (!response.ok) throw new Error('Errore nel caricamento delle macchine');
-      const data = await response.json();
-      // Filter only machines that are in progress or idle
-      setMachines(data.filter(m => m.status !== 'completed'));
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { execute: fetchMachines, loading: isLoading } = useGetCars({
+    filter: (m) => m.status !== 'completed',
+    onSuccess: (data) => setMachines(data)
+  });
 
   useEffect(() => {
     fetchMachines();
