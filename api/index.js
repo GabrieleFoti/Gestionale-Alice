@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '';
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://test.hostlyflorence.it',
+  origin: process.env.FRONTEND_URL || 'https://test.hostlyflorence.it',
   credentials: true
 };
 app.use(cors(corsOptions));
