@@ -1,20 +1,18 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite',
-  logging: false
+const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+const ddbDocClient = DynamoDBDocumentClient.from(client, {
+    marshallOptions: {
+        removeUndefinedValues: true,
+        convertClassInstanceToMap: true,
+    },
 });
 
-// Sync database
 export const initDB = async () => {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
-    console.log('Database synced successfully.');
-  } catch (error) {
-    console.error('Unable to connect to the database:', error);
-  }
+    // DynamoDB doesn't need "sync" like Sequelize, 
+    // but we can check connectivity or perform initial setup if needed.
+    console.log('DynamoDB client initialized.');
 };
 
-export default sequelize;
+export default ddbDocClient;

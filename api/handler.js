@@ -2,18 +2,40 @@ import { authMiddleware } from './middleware/authMiddleware.js';
 
 export default function handler(apiRoutes) {
   return async (req, res) => {
+    let lambdaRes = { 
+      statusCode: 200, 
+      body: '', 
+      headers: { 'Content-Type': 'application/json' } 
+    };
+
+      const event = req;
+      req = {
+        method: event.requestContext.http.method,
+        url: event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
+        headers: event.headers || {},
+        body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {}
+      };
+      res = {
+        status: (code) => {
+          lambdaRes.statusCode = code;
+          return res;
+        },
+        json: (data) => {
+          lambdaRes.body = JSON.stringify(data);
+          return res;
+        }
+      };
+
     try {
       const { method, url } = req;
       let [path] = url.split('?');
       
-      // Strip trailing slash for consistent matching
       if (path.length > 1 && path.endsWith('/')) {
         path = path.slice(0, -1);
       }
 
       console.log(`[API] ${method} ${path}`);
 
-      // Simple route matcher
       const route = apiRoutes.find(r => {
         if (r.method.toUpperCase() !== method.toUpperCase()) return false;
         
@@ -22,7 +44,6 @@ export default function handler(apiRoutes) {
           routePath = routePath.slice(0, -1);
         }
 
-        // Handle basic dynamic routes like /api/machines/:id
         const pattern = routePath.replace(/:[^\s/]+/g, '([\\w-]+)');
         const regex = new RegExp(`^${pattern}$`);
         return regex.test(path);
@@ -30,18 +51,17 @@ export default function handler(apiRoutes) {
 
       if (!route) {
         console.warn(`[API] Route not found: ${method} ${path}`);
-        return res.status(404).json({ error: 'Route not found' });
+        res.status(404).json({ error: 'Route not found' });
+        return lambdaRes;
       }
 
-      // Apply authentication middleware if route requires auth
       if (route.requireAuth !== false) {
-        const isAuthenticated = authMiddleware(req, res);
+        const isAuthenticated = await authMiddleware(req, res);
         if (!isAuthenticated) {
-          return; // Response already sent by middleware
+          return lambdaRes;
         }
       }
 
-      // Extract params
       let routePath = route.path;
       if (routePath.length > 1 && routePath.endsWith('/')) {
         routePath = routePath.slice(0, -1);
@@ -61,13 +81,15 @@ export default function handler(apiRoutes) {
       req.params = params;
 
       const result = await route.handler(req);
-      return res.status(200).json(result);
+      res.status(200).json(result);
+      return lambdaRes;
 
     } catch (error) {
       console.error('API Error:', error);
-      return res.status(error.message === 'User not found' || error.message === 'Invalid credentials' ? 401 : 500).json({ 
+      res.status(error.message === 'User not found' || error.message === 'Invalid credentials' ? 401 : 500).json({ 
         error: error.message 
       });
+      return lambdaRes;
     }
   };
 }
