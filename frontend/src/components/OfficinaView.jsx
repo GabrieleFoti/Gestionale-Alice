@@ -44,24 +44,24 @@ const OfficinaView = () => {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Left Side - Machine List */}
       <div className="lg:col-span-1">
-        <div className="bg-white rounded-lg shadow flex flex-col h-[70vh]">
-          <div className="flex justify-between items-center p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">Macchine</h2>
+        <div className="bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col h-[70vh]">
+          <div className="flex justify-between items-center p-4 border-b border-brand-text-700">
+            <h2 className="text-lg font-semibold text-brand-text">Macchine</h2>
             <button
               onClick={handleAddNew}
-              className="flex items-center px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
+              className="flex items-center px-3 py-2 text-xs font-bold tracking-wider text-white uppercase rounded-lg transition-all transition-colors bg-brand-text-700 hover:bg-brand-text-900 hover:opacity-90"
             >
               <span className="mr-1">+</span> Nuova
             </button>
           </div>
           
-          <div className="overflow-y-auto flex-grow divide-y divide-gray-200">
+          <div className="overflow-y-auto flex-grow divide-y divide-brand-text-700">
             {isLoading ? (
               <div className="flex justify-center items-center h-32">
-                <div className="w-8 h-8 rounded-full border-b-2 border-blue-600 animate-spin"></div>
+                <div className="w-8 h-8 rounded-full border-b-2 animate-spin border-brand-text"></div>
               </div>
             ) : machines.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 italic text-center opacity-60 text-brand-text">
                 Nessuna macchina trovata
               </div>
             ) : (
@@ -72,18 +72,18 @@ const OfficinaView = () => {
                     setSelectedMachine(machine);
                     setIsAddingNew(false);
                   }}
-                  className={`w-full p-4 text-left transition hover:bg-gray-50 ${
-                    selectedMachine?.id === machine.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                  className={`w-full p-4 text-left transition hover:bg-brand-text-500 ${
+                    selectedMachine?.id === machine.id ? 'bg-brand-text/10 border-l-4 border-brand-text' : ''
                   }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-semibold text-gray-800">{machine.name || 'Senza Nome'}</p>
-                      <p className="mt-1 text-xs text-gray-600 line-clamp-1">{machine.lavorazioni || 'Nessuna lavorazione'}</p>
+                      <p className="font-semibold text-brand-text">{machine.name || 'Senza Nome'}</p>
+                      <p className="mt-1 text-xs text-brand-text/70 line-clamp-1">{machine.lavorazioni || 'Nessuna lavorazione'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
                       machine.status === 'in_progress' ? 'bg-green-100 text-green-700' : 
-                      machine.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                      machine.status === 'completed' ? 'bg-brand-text/20 text-brand-text' : 'bg-brand-text/5 text-brand-text/60'
                     }`}>
                       {machine.status === 'in_progress' ? 'Attiva' : 
                        machine.status === 'completed' ? 'Completata' : 'Ferma'}
@@ -112,14 +112,14 @@ const OfficinaView = () => {
             onDelete={() => setSelectedMachine(null)}
           />
         ) : (
-          <div className="p-12 text-center text-gray-500 bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[70vh]">
-            <div className="p-4 mb-4 bg-gray-50 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="p-12 text-center text-brand-text bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col items-center justify-center h-[70vh]">
+            <div className="p-4 mb-4 rounded-full bg-brand-text/5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-brand-text/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1.2 1.2 0 01.12.12l5.414 5.414a1.2 1.2 0 01.12.12V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-lg font-medium text-gray-600">Gestione Officina</p>
-            <p className="text-sm">Seleziona una macchina o aggiungine una nuova</p>
+            <p className="text-lg font-medium text-brand-text">Gestione Officina</p>
+            <p className="text-sm opacity-70">Seleziona una macchina o aggiungine una nuova</p>
           </div>
         )}
       </div>

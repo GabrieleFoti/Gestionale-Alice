@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
 import SelectedMachineView from './SelectedMachineView';
 
 const OperatorColumn = ({ operator, machines }) => {
@@ -13,44 +12,52 @@ const OperatorColumn = ({ operator, machines }) => {
     setSelectedMachine(null);
   };
 
-  if (selectedMachine) {
-    return (
-      <SelectedMachineView
-        selectedMachine={selectedMachine}
-        handleBack={handleBack}
-        operatorName={operator.name}
-      />
-    );
-  }
-
   return (
-    <div className="flex overflow-hidden flex-col h-full bg-white rounded-xl border border-gray-200 shadow-md">
-      {/* Operator Name Header */}
-      <div className="px-2 py-3 text-xs font-bold tracking-widest text-center text-white uppercase bg-gray-800">
-        {operator.name}
+    <div className="flex overflow-hidden flex-col w-full h-full rounded-xl border shadow-md bg-brand-bg border-brand-text-700">
+      {/* Operator Name Header - always visible */}
+      <div className="flex relative justify-center items-center px-2 py-3 h-16 font-bold tracking-widest text-center uppercase bg-brand-bg-800">
+        {selectedMachine && (
+          <button
+            onClick={handleBack}
+            className="absolute left-2 p-1 rounded transition hover:opacity-70 text-brand-text-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+        )}
+        <p className="text-brand-text-200">{operator.name}</p>
       </div>
 
-      {/* Machine Grid */}
-      <div className="grid flex-grow grid-cols-2 gap-3 content-start p-4 min-h-[80vh]">
-        {machines.map((machine, index) => {
-          return (
+      {/* Content - machine grid or detail */}
+      {selectedMachine ? (
+        <SelectedMachineView
+          selectedMachine={selectedMachine}
+          handleBack={handleBack}
+          operatorName={operator.name}
+          hideHeader={true}
+        />
+      ) : (
+        <div className="grid flex-grow grid-cols-2 gap-3 content-start p-4 min-h-[80vh]">
+          {machines.map((machine, index) => (
             <button
               key={index}
               onClick={() => machine && handleMachineSelect(machine)}
               disabled={!machine}
               className={`
-                aspect-square rounded-2xl border-2 font-bold text-lg transition flex items-center justify-center
-                ${machine 
-                  ? 'text-gray-800 bg-white border-gray-800 shadow-sm hover:bg-gray-800 hover:text-white' 
-                  : 'text-gray-200 bg-gray-50 border-gray-100 opacity-50 cursor-not-allowed'
+                aspect-square rounded-2xl border-2 font-bold text-lg transition flex flex-col items-center justify-center text-center
+                ${machine
+                  ? 'shadow-sm text-brand-text-700 bg-brand-bg border-brand-text-700'
+                  : 'opacity-50 cursor-not-allowed text-brand-text/20 bg-brand-text/5 border-brand-text-700/80'
                 }
               `}
             >
-              {machine.name}
+              {machine.name.split(' ')[0]}
+              {machine.name.split(' ')[1] && <span className="block">{machine.name.split(' ')[1]}</span>}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

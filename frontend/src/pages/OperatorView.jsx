@@ -19,25 +19,19 @@ const OperatorView = () => {
     fetchMachines();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    toast.success('Logout effettuato');
-    navigate('/login');
-  };
-
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="w-12 h-12 rounded-full border-b-2 border-blue-600 animate-spin"></div>
+      <div className="flex justify-center items-center min-h-screen bg-brand-bg">
+        <div className="w-12 h-12 rounded-full border-b-2 animate-spin border-brand-text"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-50 overflow-hidden">
+    <div className="min-h-[calc(100vh-64px)] bg-brand-bg overflow-hidden">
       {/* Main Content - Full Screen 5 Columns */}
       <div className="px-2 py-4 mx-auto w-full h-full sm:px-4 lg:px-6">
-        <div className="grid grid-cols-1 h-full sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 h-full sm:grid-cols-3 lg:grid-cols-5">
           {operators.map((operator) => (
             <div key={operator.id} className="h-full">
               <OperatorColumn

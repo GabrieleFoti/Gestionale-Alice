@@ -26,13 +26,13 @@ const MachineDetail = ({ machine, onUpdate }) => {
   };
 
   return (
-    <div className="sticky top-6 p-6 bg-white rounded-lg shadow-lg">
+    <div className="sticky top-6 p-6 rounded-lg border shadow-lg bg-brand-bg-50 border-brand-text-200">
       {/* Machine Header */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-bold text-gray-800">{machine.name}</h2>
+          <h2 className="text-xl font-bold text-brand-text-800">{machine.name}</h2>
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            isActive ? 'text-green-700 bg-green-100' : 'text-gray-600 bg-gray-100'
+            isActive ? 'text-green-700 bg-green-100' : 'text-brand-text-600 bg-brand-bg-100'
           }`}>
             {isActive ? 'In Lavorazione' : 'Fermo'}
           </span>
@@ -41,13 +41,13 @@ const MachineDetail = ({ machine, onUpdate }) => {
 
       {/* Lavorazioni */}
       <div className="mb-4">
-        <label className="block mb-2 text-sm font-semibold text-gray-700">
+        <label className="block mb-2 text-sm font-semibold text-brand-text-700">
           Lavorazioni:
         </label>
         <textarea
           value={lavorazioni}
           onChange={(e) => setLavorazioni(e.target.value)}
-          className="px-3 py-2 w-full rounded-lg border border-gray-300 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 w-full rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
           rows="3"
           placeholder="Inserisci lavorazioni..."
         />
@@ -55,13 +55,13 @@ const MachineDetail = ({ machine, onUpdate }) => {
 
       {/* Note */}
       <div className="mb-4">
-        <label className="block mb-2 text-sm font-semibold text-gray-700">
+        <label className="block mb-2 text-sm font-semibold text-brand-text-700">
           Note:
         </label>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="px-3 py-2 w-full rounded-lg border border-gray-300 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 w-full rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
           rows="3"
           placeholder="Inserisci note..."
         />
@@ -69,9 +69,9 @@ const MachineDetail = ({ machine, onUpdate }) => {
 
       {/* Partial Hours */}
       {machine.partialHours && (
-        <div className="p-3 mb-6 bg-blue-50 rounded-lg">
-          <p className="text-sm font-semibold text-gray-700">Ore parziali:</p>
-          <p className="text-lg font-bold text-blue-600">{machine.partialHours}</p>
+        <div className="p-3 mb-6 rounded-lg border bg-brand-bg-100 border-brand-text-200">
+          <p className="text-sm font-semibold text-brand-text-700">Ore parziali:</p>
+          <p className="text-lg font-bold text-brand-text-800">{machine.partialHours}</p>
         </div>
       )}
 
@@ -90,14 +90,14 @@ const MachineDetail = ({ machine, onUpdate }) => {
 
         <button
           onClick={handleSave}
-          className="px-4 py-3 w-full font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700"
+          className="px-4 py-3 w-full font-semibold rounded-lg transition text-brand-bg-50 bg-brand-text-800 hover:bg-brand-text-900"
         >
           Salva Modifiche
         </button>
 
         <button
           onClick={handleFinish}
-          className="px-4 py-3 w-full font-semibold text-white bg-gray-600 rounded-lg transition hover:bg-gray-700"
+          className="px-4 py-3 w-full font-semibold rounded-lg transition text-brand-bg-50 bg-brand-text-600 hover:bg-brand-text-700"
         >
           Termina Lavoro
         </button>

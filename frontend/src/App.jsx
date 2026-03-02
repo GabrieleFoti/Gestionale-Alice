@@ -12,8 +12,8 @@ const ProtectedRoute = ({ children }) => {
   
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="w-12 h-12 rounded-full border-b-2 border-blue-600 animate-spin"></div>
+      <div className="flex justify-center items-center min-h-screen bg-brand-bg-300">
+        <div className="w-12 h-12 rounded-full border-b-2 animate-spin border-brand-text-700"></div>
       </div>
     );
   }
@@ -31,7 +31,7 @@ function App() {
   if (loading) return null;
 
   return (
-    <div className="w-full h-full bg-gray-50">
+    <div className="w-full h-full bg-brand-bg-300 text-brand-text-800">
       <NavBar />
       <main className="py-6 w-full h-full">
         <Routes>

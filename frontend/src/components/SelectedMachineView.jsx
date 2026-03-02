@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useGetActiveSessions, useStartSession, useStopSession } from '../hooks/useSessions';
 import { useUpdateCar, useCompleteCar } from '../hooks/useCars';
 
-export default function SelectedMachineView({selectedMachine, handleBack, operatorName}) {
+export default function SelectedMachineView({selectedMachine, handleBack, operatorName, hideHeader = false}) {
 
     const [note, setNote] = useState(selectedMachine.note);
     const [lavorazioni, setLavorazioni] = useState(selectedMachine.lavorazioni);
@@ -53,13 +53,9 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
     };
 
     const handleSave = async () => {
-        if(note.length === 0){
-            setNoteError(true);
-            return false;
-        }
+        if(note.length === 0) return;
         
         await updateCar(selectedMachine.id, { note });
-        return true;
     };
 
     const handleComplete = async () => {
@@ -68,9 +64,8 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
             await handleWorkToggle();
         }
 
-        // Save notes
-        const result = await handleSave();
-        if(!result){
+        if(!note.length){
+          setNoteError(true);
             return;
         }
 
@@ -79,63 +74,77 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
     };
 
 
-    return (
-        <div className="flex overflow-hidden flex-col h-full bg-white rounded-xl border border-gray-200 shadow-md">
-        {/* Detail Header */}
-        <div className="flex items-center p-3 text-white bg-gray-800">
-          <button onClick={handleBack} className="p-1 mr-2 rounded transition hover:bg-gray-700" disabled={isWorking}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <span className="text-xs font-bold tracking-wider uppercase line-clamp-1">
-            {selectedMachine.name}
-          </span>
-        </div>
-
-        {/* Detail Content */}
-        <div className="flex flex-col flex-grow justify-between p-4 space-y-4 align-center">
-          <div>
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Lavorazioni:</label>
-            <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-100 min-h-[60px]">
-              {lavorazioni || "Nessuna lavorazione specificata"}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-              Note:
-            </label>
-            <textarea 
-              className={`p-2 w-full text-sm text-gray-700 bg-white rounded border border-gray-200 outline-none resize-none focus:ring-1 focus:ring-blue-500 ${noteError ? 'border-red-500' : ''}`}
-              rows="4"
-              value={note}
-              onChange={handleNoteChange}
-              placeholder="Inserisci note..."
-              onBlur={handleSave}
-            />
-          </div>
+    const detailContent = (
+        <div className="flex overflow-y-auto flex-col flex-grow justify-between p-4 space-y-4">
+          <div className="flex flex-col space-y-2">
+            <span className="pb-2 text-xl font-bold tracking-wider text-center uppercase border-b text-md line-clamp-1 text-brand-text border-brand-text-700">
+              {selectedMachine.name}
+            </span>
+            <div>
+              <label className="block mb-1 font-bold uppercase text-md text-brand-text/50">Lavorazioni:</label>
+              <p className="text-md text-brand-text-700 p-2 rounded border border-brand-text-700 min-h-[60px]">
+                {lavorazioni || "Nessuna lavorazione specificata"}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="block font-bold uppercase text-md text-brand-text/50">Foto:</label>
+              <p className="text-md text-brand-text">
+                {selectedMachine.photo ? "✅" : "❌"}
+              </p>
+            </div>
+            <div>
+              <label className="block mb-1 font-bold uppercase text-md text-brand-text/50">
+                Note:
+              </label>
+              <textarea
+                className={`p-2 w-full text-sm text-brand-text bg-white/50 rounded border border-brand-text-700 outline-none resize-none focus:ring-1 focus:ring-brand-text ${noteError ? 'border-red-500' : ''}`}
+                rows="4"
+                value={note}
+                onChange={handleNoteChange}
+                placeholder="Inserisci note..."
+                onBlur={handleSave}
+              />
+            </div>
           </div>
           <div className="mt-auto space-y-2">
-            <button 
+            <button
               onClick={handleWorkToggle}
-              className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition ${
-                isWorking 
-                  ? 'text-white bg-red-600 border-red-700 hover:bg-red-700' 
-                  : 'text-gray-800 bg-gray-100 border-gray-300 hover:bg-gray-200'
+              className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition uppercase tracking-widest ${
+                isWorking
+                  ? 'text-white bg-red-600 border-red-700 hover:bg-red-700'
+                  : 'text-brand-text-700 border-brand-text-700 hover:opacity-90'
               }`}
             >
-              {isWorking ? 'Fine' : 'Avvia'}
+              {isWorking ? 'Stop' : 'Avvia'}
             </button>
-            <button 
+            <button
               onClick={handleComplete}
-              className="py-3 w-full text-sm font-bold text-gray-800 bg-white rounded-lg border border-gray-300 shadow-sm transition hover:bg-gray-50"
+              className="py-3 w-full text-sm font-bold tracking-widest uppercase rounded-lg border shadow-sm transition text-brand-text-700 bg-brand-bg border-brand-text-700 hover:bg-brand-text-700/10"
             >
-              Termina
+              Fine Lavori
             </button>
           </div>
         </div>
-      </div>
-    )
+    );
+
+    if (hideHeader) {
+        return detailContent;
+    }
+
+    return (
+        <div className="flex overflow-hidden flex-col h-full rounded-xl border shadow-md bg-brand-bg border-brand-text/20">
+          {/* Detail Header */}
+          <div className="flex items-center p-3 text-brand-bg bg-brand-text">
+            <button onClick={handleBack} className="p-1 mr-2 rounded transition hover:opacity-80" disabled={isWorking}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <div className="px-2 py-3 text-xs font-bold tracking-widest text-center uppercase text-brand-bg">
+              {operatorName}
+            </div>
+          </div>
+          {detailContent}
+        </div>
+    );
 }

@@ -97,18 +97,18 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   };
 
   return (
-    <div className="overflow-y-auto p-6 h-full bg-white rounded-lg border border-gray-100 shadow-lg">
+    <div className="overflow-y-auto p-6 h-full rounded-lg border shadow-lg bg-brand-bg border-brand-text-700">
       {/* Machine Header */}
-      <div className="flex justify-between items-start pb-4 mb-6 border-b border-gray-200">
+      <div className="flex justify-between items-start pb-4 mb-6 border-b border-brand-text-700">
         <div>
           {isNew ? (
-            <h2 className="text-xl font-bold tracking-tight text-gray-800 uppercase">Nuova Macchina</h2>
+            <h2 className="text-xl font-bold tracking-tight uppercase text-brand-text">Nuova Macchina</h2>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-gray-800">{machine.name}</h2>
+              <h2 className="text-2xl font-bold text-brand-text">{machine.name}</h2>
               <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                 machine.status === 'in_progress' ? 'bg-green-100 text-green-700' : 
-                machine.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                machine.status === 'completed' ? 'bg-brand-text-100 text-brand-text-700' : 'bg-brand-bg-100 text-brand-text-600'
               }`}>
                 {machine.status === 'in_progress' ? 'In Lavorazione' : 'Completato'}
               </span>
@@ -116,7 +116,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           )}
         </div>
         {isNew && (
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onCancel} className="text-brand-text-400 hover:text-brand-text-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -129,22 +129,22 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
         {(isNew || admin) && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Modello:</label>
+              <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Modello:</label>
               <input
                 type="text"
                 value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="px-3 py-2 w-full text-sm rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setModel(e.target.value.toUpperCase())}
+                className="px-3 py-2 w-full text-sm rounded-lg border outline-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
                 placeholder="es. Huracan"
               />
             </div>
             <div>
-              <label className="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Targa:</label>
+              <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Targa:</label>
               <input
                 type="text"
                 value={plate}
-                onChange={(e) => setPlate(e.target.value)}
-                className="px-3 py-2 w-full text-sm rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                className="px-3 py-2 w-full text-sm rounded-lg border outline-none border-brand-text/30 text-brand-text focus:ring-2 focus:ring-brand-text focus:border-transparent"
                 placeholder="es. AA123BB"
               />
             </div>
@@ -153,74 +153,74 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
 
         {/* Lavorazioni */}
         <div>
-          <label className="block mb-1 text-[10px] font-bold text-gray-400 uppercase">Lavorazioni:</label>
+          <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Lavorazioni:</label>
           {admin || isNew ? (
             <textarea
               value={lavorazioni}
               onChange={(e) => setLavorazioni(e.target.value)}
-              className="px-3 py-2 w-full text-sm rounded-lg border border-gray-300 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 w-full text-sm rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
               rows="3"
               placeholder="es. Verniciatura, lucidatura..."
             />
           ) : (
-            <p className="px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg border border-gray-100">{lavorazioni || 'Nessuna lavorazione'}</p>
+            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{lavorazioni || 'Nessuna lavorazione'}</p>
           )}
         </div>
         {/* Foto */}
         <div className='flex gap-4 justify-start items-center'>
-          <label className="block text-[12px] font-bold text-gray-400 uppercase">Foto:</label>
+          <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Foto:</label>
           {admin || isNew ? (
             <input
               type="checkbox"
               checked={photo}
               onChange={(e) => setPhoto(e.target.checked)}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-300 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
             />
           ) : (
-            <p className="px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg border border-gray-100">{photo ? 'Si' : 'No'}</p>
+            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{photo ? 'Si' : 'No'}</p>
           )}
         </div>
         {/* Note */}
         <div>
-          <label className="block mb-1 text-[10px] font-bold text-gray-400 uppercase">
+          <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">
             Note:
           </label>
           {operator ? (
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="px-3 py-2 w-full text-sm rounded-lg border border-gray-300 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 w-full text-sm rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
               rows="3"
             />
           ) : (
-            <p className="px-3 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg border border-gray-100">{note || 'Nessuna nota'}</p>
+            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{note || 'Nessuna nota'}</p>
           )}
         </div>
 
         {/* Total Time - Only if not new */}
         {!isNew && (
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-brand-text-700">
             <div className="flex justify-between items-center mb-4">
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Tempo Totale Lavorazione:</label>
-              <span className="text-xl font-bold text-blue-600">{formatDuration(totalMinutes)}</span>
+              <label className="text-[10px] font-bold text-brand-text/50 uppercase">Tempo Totale Lavorazione:</label>
+              <span className="text-xl font-bold text-brand-text">{formatDuration(totalMinutes)}</span>
             </div>
             
             {/* Session History */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-2">Dettaglio Lavoratori:</label>
+              <label className="block text-[10px] font-bold text-brand-text-700 uppercase mb-2">Dettaglio Lavoratori:</label>
               <div className="overflow-y-auto pr-2 space-y-2 max-h-40">
                 {sessions.length === 0 ? (
-                  <p className="text-xs italic text-gray-400">Nessuna sessione registrata</p>
+                  <p className="text-xs italic text-brand-text-700">Nessuna sessione registrata</p>
                 ) : (
                   sessions.map((session) => (
-                    <div key={session.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+                    <div key={session.id} className="flex justify-between items-center p-2 rounded-lg border bg-brand-bg-300 border-brand-text-700">
                       <div>
-                        <p className="text-xs font-bold text-gray-700">{session.operatorName}</p>
-                        <p className="text-[10px] text-gray-400">
+                        <p className="text-xs font-bold text-brand-text-700">{session.operatorName}</p>
+                        <p className="text-[10px] text-brand-text-700">
                           {new Date(session.startTime).toLocaleDateString()} {new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </p>
                       </div>
-                      <span className="text-xs font-semibold text-gray-600">
+                      <span className="text-xs font-semibold text-brand-text-600">
                         {session.durationMinutes ? formatDuration(session.durationMinutes) : 'In corso...'}
                       </span>
                     </div>
@@ -237,7 +237,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           {isNew && (
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-3 text-xs font-bold tracking-wider text-gray-600 uppercase bg-gray-100 rounded-xl transition hover:bg-gray-200"
+              className="flex-1 px-4 py-3 text-xs font-bold tracking-wider uppercase rounded-xl transition text-brand-text-700 bg-brand-bg-100 hover:bg-brand-bg-200"
             >
               Annulla
             </button>
@@ -257,7 +257,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-3 flex-[2] font-bold text-white bg-blue-600 rounded-xl transition hover:bg-blue-700 disabled:opacity-50 uppercase text-xs tracking-wider shadow-md shadow-blue-200"
+            className="px-4 py-3 flex-[2] font-bold text-brand-bg bg-brand-text rounded-xl transition hover:opacity-90 disabled:opacity-50 uppercase text-xs tracking-wider shadow-md"
           >
             {isSaving ? 'Salvataggio...' : isNew ? 'Crea Macchina' : 'Salva Modifiche'}
           </button>

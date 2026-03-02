@@ -54,15 +54,15 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center w-full h-[80vh]">
-      <div className="p-8 w-full max-w-md bg-white rounded-2xl shadow-2xl">
+      <div className="p-8 w-full max-w-md rounded-2xl border shadow-xl bg-brand-bg border-brand-bg-700">
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">Gestionale Alice</h1>
-          <p className="text-gray-600">Accedi al sistema</p>
+          <h1 className="mb-2 text-3xl font-bold text-brand-text">Gestionale Alice</h1>
+          <p className="opacity-80 text-brand-text">Accedi al sistema</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block mb-2 text-sm font-medium text-brand-text">
               Username
             </label>
             <input
@@ -70,14 +70,14 @@ const Login = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="px-4 py-3 w-full rounded-lg border border-gray-300 transition outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 w-full rounded-lg border transition outline-none bg-brand-bg-300 border-brand-text-500 bg-white/50 text-brand-text focus:ring-2 focus:ring-brand-text-900 focus:border-transparent placeholder-brand-text/50"
               placeholder="Inserisci username"
               disabled={isLoading}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-brand-text">
               Password
             </label>
             <input
@@ -85,7 +85,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="px-4 py-3 w-full rounded-lg border border-gray-300 transition outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 w-full rounded-lg border transition outline-none bg-brand-bg-300 border-brand-text-500 bg-white/50 text-brand-text focus:ring-2 focus:ring-brand-text-900 focus:border-transparent placeholder-brand-text/50"
               placeholder="Inserisci password"
               disabled={isLoading}
             />
@@ -94,13 +94,13 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-3 w-full font-semibold text-white bg-blue-600 rounded-lg transition duration-200 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-3 w-full font-semibold tracking-wider text-white uppercase rounded-lg transition duration-200 bg-brand-bg-700 text-brand-bg bg-brand-text hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Accesso in corso...' : 'Accedi'}
           </button>
         </form>
 
-        <div className="mt-6 text-sm text-center text-gray-500">
+        <div className="mt-6 text-sm text-center opacity-60 text-brand-text">
           <p>Sistema di gestione officina</p>
         </div>
       </div>
