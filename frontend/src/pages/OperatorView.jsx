@@ -28,12 +28,12 @@ const OperatorView = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-brand-bg overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-brand-bg overflow-hidden p-2 sm:p-4 lg:p-6 w-full mx-auto">
       {/* Main Content - Full Screen 5 Columns */}
-      <div className="px-2 py-4 mx-auto w-full h-full sm:px-4 lg:px-6">
+      <div className="flex-1 min-h-0 w-full">
         <div className="grid grid-cols-1 gap-3 h-full sm:grid-cols-3 lg:grid-cols-5">
           {operators.map((operator) => (
-            <div key={operator.id} className="h-full">
+            <div key={operator.id} className="h-full min-h-0">
               <OperatorColumn
                 operator={operator}
                 machines={machines}

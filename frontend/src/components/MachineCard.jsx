@@ -9,6 +9,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   const [lavorazioni, setLavorazioni] = useState(machine.lavorazioni || '');
   const [note, setNote] = useState(machine.note || '');
   const [photo, setPhoto] = useState(machine.photo || false);
+  const [assicurazione, setAssicurazione] = useState(machine.assicurazione || false);
   const [sessions, setSessions] = useState([]);
 
   // Hooks for API operations
@@ -55,6 +56,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
     setLavorazioni(machine.lavorazioni || '');
     setNote(machine.note || '');
     setPhoto(machine.photo || false);
+    setAssicurazione(machine.assicurazione || false);
   }, [machine.id]);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
       return toast.error('Modello e Targa sono obbligatori');
     }
 
-    const carData = { model, plate, lavorazioni, note, photo };
+    const carData = { model, plate, lavorazioni, note, photo, assicurazione };
     
     if (isNew) {
       await createCar(carData);
@@ -166,19 +168,34 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
             <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{lavorazioni || 'Nessuna lavorazione'}</p>
           )}
         </div>
-        {/* Foto */}
-        <div className='flex gap-4 justify-start items-center'>
-          <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Foto:</label>
-          {admin || isNew ? (
-            <input
-              type="checkbox"
-              checked={photo}
-              onChange={(e) => setPhoto(e.target.checked)}
-              className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
-            />
-          ) : (
-            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{photo ? 'Si' : 'No'}</p>
-          )}
+        {/* Foto and Assicurazione */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className='flex gap-4 justify-start items-center'>
+            <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Foto:</label>
+            {admin || isNew ? (
+              <input
+                type="checkbox"
+                checked={photo}
+                onChange={(e) => setPhoto(e.target.checked)}
+                className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
+              />
+            ) : (
+              <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{photo ? 'Si' : 'No'}</p>
+            )}
+          </div>
+          <div className='flex gap-4 justify-start items-center'>
+            <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Assicurazione:</label>
+            {admin || isNew ? (
+              <input
+                type="checkbox"
+                checked={assicurazione}
+                onChange={(e) => setAssicurazione(e.target.checked)}
+                className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
+              />
+            ) : (
+              <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{assicurazione ? 'Si' : 'No'}</p>
+            )}
+          </div>
         </div>
         {/* Note */}
         <div>

@@ -33,7 +33,7 @@ function App() {
   return (
     <div className="w-full h-full bg-brand-bg-300 text-brand-text-800">
       <NavBar />
-      <main className="py-6 w-full h-full">
+      <main className="w-full h-full">
         <Routes>
           <Route path="/login" element={<Login />} />
 

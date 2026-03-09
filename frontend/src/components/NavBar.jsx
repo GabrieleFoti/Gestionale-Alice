@@ -12,7 +12,7 @@ const NavBar = () => {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-brand-bg border-brand-bg-700">
+    <nav className="sticky top-0 z-50 border-b bg-brand-bg-300 border-brand-bg-700">
       <div className="px-12">
         <div className="flex justify-between h-16">
           <div className="flex">

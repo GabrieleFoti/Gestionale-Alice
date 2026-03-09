@@ -10,7 +10,7 @@ export default function handler(apiRoutes) {
 
       const event = req;
       req = {
-        method: event.requestContext.http.method,
+        method: event.requestContext?.http?.method,
         url: event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
         headers: event.headers || {},
         body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {}

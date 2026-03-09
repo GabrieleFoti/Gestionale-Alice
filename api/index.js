@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '';
 const corsOptions = {
-  origin: 'https://dj9cnvlgxzbox.cloudfront.net',
+  origin: ['https://dj9cnvlgxzbox.cloudfront.net', 'http://localhost:5173'],
   credentials: true
 };
 app.use(cors(corsOptions));

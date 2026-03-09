@@ -15,7 +15,7 @@ const OperatorColumn = ({ operator, machines }) => {
   return (
     <div className="flex overflow-hidden flex-col w-full h-full rounded-xl border shadow-md bg-brand-bg border-brand-text-700">
       {/* Operator Name Header - always visible */}
-      <div className="flex relative justify-center items-center px-2 py-3 h-16 font-bold tracking-widest text-center uppercase bg-brand-bg-800">
+      <div className="flex relative z-10 justify-center items-center px-2 py-3 h-16 font-bold tracking-widest text-center uppercase border-b shrink-0 bg-brand-bg-800 border-brand-text-700">
         {selectedMachine && (
           <button
             onClick={handleBack}
@@ -30,15 +30,16 @@ const OperatorColumn = ({ operator, machines }) => {
       </div>
 
       {/* Content - machine grid or detail */}
-      {selectedMachine ? (
-        <SelectedMachineView
-          selectedMachine={selectedMachine}
-          handleBack={handleBack}
-          operatorName={operator.name}
-          hideHeader={true}
-        />
-      ) : (
-        <div className="grid flex-grow grid-cols-2 gap-3 content-start p-4 min-h-[80vh]">
+      <div className="overflow-y-auto flex-1">
+        {selectedMachine ? (
+          <SelectedMachineView
+            selectedMachine={selectedMachine}
+            handleBack={handleBack}
+            operatorName={operator.name}
+            hideHeader={true}
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 content-start p-4">
           {machines.map((machine, index) => (
             <button
               key={index}
@@ -52,12 +53,13 @@ const OperatorColumn = ({ operator, machines }) => {
                 }
               `}
             >
-              {machine.name.split(' ')[0]}
-              {machine.name.split(' ')[1] && <span className="block">{machine.name.split(' ')[1]}</span>}
+              <span>{machine.model}</span>
+              <span>{machine.plate}</span>
             </button>
           ))}
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

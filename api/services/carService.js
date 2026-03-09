@@ -6,7 +6,7 @@ const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 
 const toApiModel = (item) => ({
     id: item.PK.replace(CAR_PK_PREFIX, ''),
-    name: (item.model || '') + " " + (item.plate || ''),
+    name: (item.model || '') + " / " + (item.plate || ''),
     model: item.model,
     plate: item.plate,
     status: item.status,
@@ -14,7 +14,8 @@ const toApiModel = (item) => ({
     note: item.note,
     partialHours: item.partialHours,
     totalHours: item.totalHours,
-    photo: item.photo
+    photo: item.photo,
+    assicurazione: item.assicurazione
 });
 
 export default function carService() {
@@ -29,7 +30,7 @@ export default function carService() {
             }
         };
         const data = await ddbDocClient.send(new QueryCommand(params));
-        return (data.Items || []).map(toApiModel);
+        return (data.Items || []).sort((a, b) => b.createdAt - a.createdAt).map(toApiModel);
     }
 
     async function getById(req, id) {

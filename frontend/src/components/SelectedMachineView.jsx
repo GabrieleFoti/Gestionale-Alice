@@ -77,7 +77,7 @@ export default function SelectedMachineView({selectedMachine, handleBack, operat
     const detailContent = (
         <div className="flex overflow-y-auto flex-col flex-grow justify-between p-4 space-y-4">
           <div className="flex flex-col space-y-2">
-            <span className="pb-2 text-xl font-bold tracking-wider text-center uppercase border-b text-md line-clamp-1 text-brand-text border-brand-text-700">
+            <span className="pb-2 text-xl font-bold tracking-wider text-center uppercase border-b text-md text-brand-text border-brand-text-700">
               {selectedMachine.name}
             </span>
             <div>
