@@ -41,10 +41,10 @@ const OfficinaView = () => {
 
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 h-full">
       {/* Left Side - Machine List */}
-      <div className="lg:col-span-1">
-        <div className="bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col h-[70vh]">
+      <div className="lg:col-span-1 h-[90vh]">
+        <div className="bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col h-full">
           <div className="flex justify-between items-center p-4 border-b border-brand-text-700">
             <h2 className="text-lg font-semibold text-brand-text">Macchine</h2>
             <button
@@ -54,7 +54,7 @@ const OfficinaView = () => {
               <span className="mr-1">+</span> Nuova
             </button>
           </div>
-          
+
           <div className="overflow-y-auto flex-grow divide-y divide-brand-text-700">
             {isLoading ? (
               <div className="flex justify-center items-center h-32">
@@ -72,21 +72,19 @@ const OfficinaView = () => {
                     setSelectedMachine(machine);
                     setIsAddingNew(false);
                   }}
-                  className={`w-full p-4 text-left transition hover:bg-brand-text-500 ${
-                    selectedMachine?.id === machine.id ? 'bg-brand-text/10 border-l-4 border-brand-text' : ''
-                  }`}
+                  className={`w-full p-4 text-left transition hover:bg-brand-text-500 ${selectedMachine?.id === machine.id ? 'bg-brand-text/10 border-l-4 border-brand-text' : ''
+                    }`}
                 >
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-semibold text-brand-text">{machine.name || 'Senza Nome'}</p>
                       <p className="mt-1 text-xs text-brand-text/70 line-clamp-1">{machine.lavorazioni || 'Nessuna lavorazione'}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                      machine.status === 'in_progress' ? 'bg-green-100 text-green-700' : 
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${machine.status === 'in_progress' ? 'bg-green-100 text-green-700' :
                       machine.status === 'completed' ? 'bg-brand-text/20 text-brand-text' : 'bg-brand-text/5 text-brand-text/60'
-                    }`}>
-                      {machine.status === 'in_progress' ? 'Attiva' : 
-                       machine.status === 'completed' ? 'Completata' : 'Ferma'}
+                      }`}>
+                      {machine.status === 'in_progress' ? 'Attiva' :
+                        machine.status === 'completed' ? 'Completata' : 'Ferma'}
                     </span>
                   </div>
                 </button>
@@ -97,22 +95,22 @@ const OfficinaView = () => {
       </div>
 
       {/* Right Side - Machine Detail */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 h-full">
         {isAddingNew ? (
-          <MachineCard 
-            isNew={true} 
-            onCancel={() => setIsAddingNew(false)} 
+          <MachineCard
+            isNew={true}
+            onCancel={() => setIsAddingNew(false)}
             onSuccess={handleCreated}
           />
         ) : selectedMachine ? (
-          <MachineCard 
-            machine={selectedMachine} 
-            admin={true} 
-            onSuccess={() => fetchMachines()} 
+          <MachineCard
+            machine={selectedMachine}
+            admin={true}
+            onSuccess={() => fetchMachines()}
             onDelete={() => setSelectedMachine(null)}
           />
         ) : (
-          <div className="p-12 text-center text-brand-text bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col items-center justify-center h-[70vh]">
+          <div className="p-12 text-center text-brand-text bg-brand-bg rounded-lg shadow-lg border border-brand-text-700 flex flex-col items-center justify-center h-full">
             <div className="p-4 mb-4 rounded-full bg-brand-text/5">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-brand-text/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1.2 1.2 0 01.12.12l5.414 5.414a1.2 1.2 0 01.12.12V19a2 2 0 01-2 2z" />

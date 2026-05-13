@@ -21,10 +21,10 @@ const ArchivioView = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 h-full">
       {/* Left Side - Machine List */}
-      <div className="lg:col-span-1">
-        <div className="bg-brand-bg rounded-lg shadow-lg h-[70vh] flex flex-col border border-brand-text/20">
+      <div className="lg:col-span-1 h-full">
+        <div className="bg-brand-bg rounded-lg shadow-lg h-full flex flex-col border border-brand-text/20">
           <div className="p-4 border-b border-brand-text/20">
             <h2 className="text-lg font-semibold text-brand-text">Macchine Completate</h2>
           </div>
@@ -63,7 +63,7 @@ const ArchivioView = () => {
       </div>
 
       {/* Right Side - Machine Detail */}
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 h-full">
         {selectedMachine ? (
           <MachineCard 
             machine={selectedMachine} 
@@ -75,7 +75,7 @@ const ArchivioView = () => {
             onDelete={() => setSelectedMachine(null)}
           />
         ) : (
-          <div className="p-12 text-center text-brand-text bg-brand-bg rounded-lg shadow-lg h-[70vh] flex items-center justify-center border border-brand-text/20">
+          <div className="p-12 text-center text-brand-text bg-brand-bg rounded-lg shadow-lg h-full flex items-center justify-center border border-brand-text/20">
             <p>Seleziona una macchina per vedere i dettagli</p>
           </div>
         )}

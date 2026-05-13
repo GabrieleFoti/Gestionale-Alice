@@ -31,9 +31,9 @@ function App() {
   if (loading) return null;
 
   return (
-    <div className="w-full h-full bg-brand-bg-300 text-brand-text-800">
+    <div className="flex flex-col h-screen bg-brand-bg-300 text-brand-text-800 overflow-hidden">
       <NavBar />
-      <main className="w-full h-full">
+      <main className="flex-1 mt-6 px-6 pb-6 overflow-hidden">
         <Routes>
           <Route path="/login" element={<Login />} />
 
