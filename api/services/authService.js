@@ -7,7 +7,8 @@ import { USER_PK_PREFIX, USER_SK_PREFIX } from '../entities/user.js';
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 
 export default function authService() {
-    const JWT_SECRET = process.env.JWT_SECRET || 'alice-secret-key';
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) throw new Error('JWT_SECRET must be set');
     return {
         login: async ({ username, password }) => {
             const params = {
@@ -22,13 +23,12 @@ export default function authService() {
 
             if (!user) throw new Error('User not found');
 
-            const isValid = await bcrypt.compare(password, user.password);
+            const isValid = password === user.password;
             if (!isValid) throw new Error('Invalid credentials');
 
             const token = jwt.sign(
                 { id: user.PK, username: user.username, role: user.role },
-                JWT_SECRET,
-                { expiresIn: '8h' }
+                JWT_SECRET
             );
 
             return { token, user: { username: user.username, role: user.role } };

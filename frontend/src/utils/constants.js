@@ -3,7 +3,7 @@
  */
 
 // Base URL for all API calls
-export const API_BASE_URL = /* location.hostname.includes("localhost") ? "http://localhost:5000/api" :  */'https://poradyo6a4.execute-api.eu-west-3.amazonaws.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // API Endpoints
 export const API_ENDPOINTS = {

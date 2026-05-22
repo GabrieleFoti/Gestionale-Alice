@@ -39,6 +39,20 @@ export default function workSessionService() {
       Item: session
     }));
 
+    // Porta la macchina in lavorazione (solo se non è già completata)
+    try {
+      await ddbDocClient.send(new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
+        UpdateExpression: 'set #s = :inProgress',
+        ConditionExpression: '#s <> :completed',
+        ExpressionAttributeNames: { '#s': 'status' },
+        ExpressionAttributeValues: { ':inProgress': 'in_progress', ':completed': 'completed' },
+      }));
+    } catch (e) {
+      if (e.name !== 'ConditionalCheckFailedException') throw e;
+    }
+
     return session;
   }
 
@@ -102,6 +116,25 @@ export default function workSessionService() {
         ':th': totalHoursStr
       }
     }));
+
+    // Se non ci sono altre sessioni attive, riporta la macchina a waiting
+    const remainingActive = (sessionsData.Items || []).filter(s =>
+      !s.endTime && s.PK !== activeSession.PK
+    );
+    if (remainingActive.length === 0) {
+      try {
+        await ddbDocClient.send(new UpdateCommand({
+          TableName: TABLE_NAME,
+          Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
+          UpdateExpression: 'set #s = :waiting',
+          ConditionExpression: '#s <> :completed',
+          ExpressionAttributeNames: { '#s': 'status' },
+          ExpressionAttributeValues: { ':waiting': 'waiting', ':completed': 'completed' },
+        }));
+      } catch (e) {
+        if (e.name !== 'ConditionalCheckFailedException') throw e;
+      }
+    }
 
     return activeSession;
   }

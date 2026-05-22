@@ -50,7 +50,7 @@ export default function carService() {
     async function create(req, data) {
         if(!req.user) throw new Error('User not logged in');
         const id = Date.now().toString();
-        const item = toCarItem({ ...data, id });
+        const item = toCarItem({ ...data, id, status: 'waiting' });
         await ddbDocClient.send(new PutCommand({
             TableName: TABLE_NAME,
             Item: item

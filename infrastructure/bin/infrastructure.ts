@@ -7,9 +7,9 @@ import { PanzaniDesignFrontendStack } from '../lib/frontend-stack';
 const app = new cdk.App();
 
 // Ambiente Regional (Express Backend + S3 Website)
-const envEu = { 
-  account: process.env.CDK_DEFAULT_ACCOUNT, 
-  region: process.env.CDK_DEFAULT_REGION || 'eu-west-3' 
+const envEu = {
+  account: '887525715905',
+  region: 'eu-south-1'
 };
 
 try {

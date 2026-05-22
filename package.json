@@ -5,10 +5,10 @@
   "scripts": {
     "build:frontend": "cd frontend && npm install && npm run build",
     "build:api": "cd api && npm install",
-    "deploy": "npm run build:frontend && npm run build:api && cd infrastructure && npm install && npx cdk deploy --all --require-approval never",
-    "deploy:api": "npm run build:api && cd infrastructure && npx cdk deploy PanzaniDesignBackendStack",
-    "deploy:frontend": "npm run build:frontend && cd infrastructure && npx cdk deploy PanzaniDesignFrontendStack",
-    "destroy": "cd infrastructure && npx cdk destroy --all"
+    "deploy": "npm run build:frontend && npm run build:api && cd infrastructure && npm install && npx cdk deploy --all --require-approval never --profile PanzaniDesign",
+    "deploy:api": "npm run build:api && cd infrastructure && npx cdk deploy PanzaniDesignBackendStack --profile PanzaniDesign",
+    "deploy:frontend": "npm run build:frontend && cd infrastructure && npx cdk deploy PanzaniDesignFrontendStack --profile PanzaniDesign",
+    "destroy": "cd infrastructure && npx cdk destroy --all --profile PanzaniDesign"
   },
   "author": "Antigravity",
   "license": "ISC"

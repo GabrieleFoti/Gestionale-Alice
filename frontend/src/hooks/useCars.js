@@ -230,7 +230,7 @@ export const useRestoreCar = ({ onSuccess, onError } = {}) => {
     try {
       const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CAR_BY_ID(carId)}`, {
         method: 'PUT',
-        body: JSON.stringify({ status: 'in_progress' })
+        body: JSON.stringify({ status: 'waiting' })
       });
 
       if (!response.ok) throw new Error('Errore durante il ripristino');

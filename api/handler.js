@@ -86,9 +86,10 @@ export default function handler(apiRoutes) {
 
     } catch (error) {
       console.error('API Error:', error);
-      res.status(error.message === 'User not found' || error.message === 'Invalid credentials' ? 401 : 500).json({ 
-        error: error.message 
-      });
+      const isAuthError = error.message === 'User not found' || error.message === 'Invalid credentials';
+      const statusCode = isAuthError ? 401 : 500;
+      const clientMessage = isAuthError ? error.message : 'Internal server error';
+      res.status(statusCode).json({ error: clientMessage });
       return lambdaRes;
     }
   };

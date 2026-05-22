@@ -33,7 +33,7 @@ function App() {
   return (
     <div className="flex flex-col h-screen bg-brand-bg-300 text-brand-text-800 overflow-hidden">
       <NavBar />
-      <main className="flex-1 mt-6 px-6 pb-6 overflow-hidden">
+      <main className="flex-1 mt-3 px-3 pb-3 sm:mt-6 sm:px-6 sm:pb-6 overflow-hidden">
         <Routes>
           <Route path="/login" element={<Login />} />
 

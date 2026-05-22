@@ -8,8 +8,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '';
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173'];
+
 const corsOptions = {
-  origin: ['https://dj9cnvlgxzbox.cloudfront.net', 'http://localhost:5173'],
+  origin: allowedOrigins,
   credentials: true
 };
 app.use(cors(corsOptions));

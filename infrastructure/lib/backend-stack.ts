@@ -2,7 +2,6 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
-import * as iam from 'aws-cdk-lib/aws-iam';
 
 import {
   HttpApi,
@@ -48,6 +47,7 @@ export class PanzaniDesignBackendStack extends cdk.Stack {
       environment: {
         NODE_ENV: 'production',
         DYNAMODB_TABLE_NAME: table.tableName,
+        // JWT_SECRET: aggiungere manualmente dalla console AWS o via SecretsManager
       }
     });
 
@@ -58,10 +58,12 @@ export class PanzaniDesignBackendStack extends cdk.Stack {
     // HTTP API
     // =========================
 
+    const frontendUrl = 'https://d2ld5a0t7j1xb8.cloudfront.net';
+
     const httpApi = new HttpApi(this, 'HttpApi', {
       apiName: 'PanzaniDesign-Backend-API',
       corsPreflight: {
-        allowOrigins: ['*'],
+        allowOrigins: [frontendUrl, 'http://localhost:5173', 'http://localhost:5174'],
         allowHeaders: [
           'Content-Type',
           'Authorization'

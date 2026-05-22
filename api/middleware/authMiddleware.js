@@ -1,19 +1,11 @@
-import { CognitoJwtVerifier } from 'aws-jwt-verify';
+import jwt from 'jsonwebtoken';
 
-const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || 'eu-north-1_3Om6xHC0B';
-const CLIENT_ID = process.env.COGNITO_CLIENT_ID || '3ogm70rtra6t1gov1h8j7i14ot';
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Verifier per idToken Cognito
-const verifier = CognitoJwtVerifier.create({
-  userPoolId: USER_POOL_ID,
-  tokenUse: 'id',
-  clientId: CLIENT_ID,
-});
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET must be set');
+}
 
-/**
- * Middleware to verify Cognito ID token from Authorization header.
- * Attaches decoded user info to req.user if valid.
- */
 export const authMiddleware = async (req, res) => {
   const authHeader = req.headers.authorization;
 
@@ -25,16 +17,15 @@ export const authMiddleware = async (req, res) => {
   const token = authHeader.substring(7);
 
   try {
-    const payload = await verifier.verify(token);
+    const payload = jwt.verify(token, JWT_SECRET);
     req.user = {
-      id: payload.sub,
-      username: payload['cognito:username'] || payload.email,
-      email: payload.email,
-      role: payload['custom:role'] || payload['cognito:groups']?.[0] || 'operator',
+      id: payload.id,
+      username: payload.username,
+      role: payload.role || 'operator',
     };
     return true;
   } catch (error) {
-    if (error.message?.includes('expired')) {
+    if (error.name === 'TokenExpiredError') {
       res.status(401).json({ error: 'Token expired' });
     } else {
       res.status(401).json({ error: 'Invalid token' });
