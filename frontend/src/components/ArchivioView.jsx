@@ -20,10 +20,10 @@ const ArchivioView = () => {
   const [showDetail, setShowDetail] = useState(false);
 
   const { execute: fetchMachines, loading: isLoading } = useGetCars({
-    filter: (m) => m.status === 'completed',
     onSuccess: (data) => {
-      setMachines(data);
-      if (selectedMachine && !data.find(m => m.id === selectedMachine.id)) {
+      const completed = data.filter(m => m.status === 'completed');
+      setMachines(completed);
+      if (selectedMachine && !completed.find(m => m.id === selectedMachine.id)) {
         setSelectedMachine(null);
         setShowDetail(false);
       }
@@ -32,7 +32,7 @@ const ArchivioView = () => {
 
   useEffect(() => {
     fetchMachines();
-  }, []);
+  }, [fetchMachines]);
 
   const handleMachineSelect = (machine) => {
     setSelectedMachine(machine);

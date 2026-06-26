@@ -23,8 +23,7 @@ const OperatorView = () => {
   });
 
   const { execute: fetchMachines, loading: isLoading } = useGetCars({
-    filter: (m) => m.status !== 'completed',
-    onSuccess: (data) => setMachines(data)
+    onSuccess: (data) => setMachines(data.filter(m => m.status !== 'completed'))
   });
 
   const refreshAll = useCallback(() => {
@@ -34,7 +33,7 @@ const OperatorView = () => {
 
   useEffect(() => {
     refreshAll();
-  }, []);
+  }, [refreshAll]);
 
   if (isLoading) {
     return (

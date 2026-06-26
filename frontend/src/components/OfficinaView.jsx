@@ -21,13 +21,13 @@ const OfficinaView = () => {
   const [showDetail, setShowDetail] = useState(false);
 
   const { execute: fetchMachines, loading: isLoading } = useGetCars({
-    filter: (m) => m.status !== 'completed',
     onSuccess: (data) => {
-      setMachines(data);
+      const active = data.filter(m => m.status !== 'completed');
+      setMachines(active);
       if (selectedMachine) {
-        const updatedSelected = data.find(m => m.id === selectedMachine.id);
-        if (updatedSelected) {
-          setSelectedMachine(updatedSelected);
+        const updated = active.find(m => m.id === selectedMachine.id);
+        if (updated) {
+          setSelectedMachine(updated);
         } else {
           setSelectedMachine(null);
           setShowDetail(false);
@@ -38,7 +38,7 @@ const OfficinaView = () => {
 
   useEffect(() => {
     fetchMachines();
-  }, []);
+  }, [fetchMachines]);
 
   const handleAddNew = () => {
     setIsAddingNew(true);

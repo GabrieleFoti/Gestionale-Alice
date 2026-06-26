@@ -45,7 +45,7 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
 
   useEffect(() => {
     checkActiveSessions(selectedMachine.id);
-  }, [selectedMachine.id, operatorName]);
+  }, [selectedMachine.id, operatorName, checkActiveSessions]);
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);

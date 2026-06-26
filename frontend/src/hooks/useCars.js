@@ -5,13 +5,12 @@ import toast from 'react-hot-toast';
 import { createApiHook } from './createApiHook';
 
 /**
- * Hook to fetch all cars with optional filtering
+ * Hook to fetch all cars
  * @param {Object} options - Configuration options
- * @param {Function} options.onSuccess - Callback on successful fetch
+ * @param {Function} options.onSuccess - Callback on successful fetch (receives full unfiltered result)
  * @param {Function} options.onError - Callback on error
- * @param {Function} options.filter - Optional filter function to apply to results
  */
-export const useGetCars = ({ onSuccess, onError, filter } = {}) => {
+export const useGetCars = ({ onSuccess, onError } = {}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState([]);
@@ -22,14 +21,7 @@ export const useGetCars = ({ onSuccess, onError, filter } = {}) => {
     try {
       const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CARS}`);
       if (!response.ok) throw new Error('Errore nel caricamento delle macchine');
-      
-      let result = await response.json();
-      
-      // Apply filter if provided
-      if (filter && typeof filter === 'function') {
-        result = result.filter(filter);
-      }
-      
+      const result = await response.json();
       setData(result);
       if (onSuccess) onSuccess(result);
       return result;
@@ -44,7 +36,7 @@ export const useGetCars = ({ onSuccess, onError, filter } = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [onSuccess, onError, filter]);
+  }, [onSuccess, onError]);
 
   return { execute, loading, error, data };
 };
