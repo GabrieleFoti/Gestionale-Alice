@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as path from 'path';
 
 import {
@@ -53,6 +55,32 @@ export class PanzaniDesignBackendStack extends cdk.Stack {
 
     // Permessi DynamoDB
     table.grantReadWriteData(apiLambda);
+
+    // =========================
+    // Lambda schedulata: stop lavorazioni alle 18:30 ora italiana
+    // EventBridge usa UTC: 16:30 UTC = 18:30 CEST (estate), 17:30 CET (inverno)
+    // =========================
+
+    const stopSessionsLambda = new lambda.Function(this, 'StopSessionsLambda', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../api')),
+      handler: 'stopAllSessionsHandler.stopAllSessionsHandler',
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(60),
+      environment: {
+        NODE_ENV: 'production',
+        DYNAMODB_TABLE_NAME: table.tableName,
+      },
+    });
+
+    table.grantReadWriteData(stopSessionsLambda);
+
+    // Cron: ogni giorno alle 16:30 UTC (18:30 CEST / 17:30 CET)
+    new events.Rule(this, 'StopSessionsSchedule', {
+      schedule: events.Schedule.cron({ minute: '30', hour: '16' }),
+      targets: [new targets.LambdaFunction(stopSessionsLambda)],
+      description: 'Ferma tutte le lavorazioni attive alle 18:30 ora italiana (CEST)',
+    });
 
     // =========================
     // HTTP API
