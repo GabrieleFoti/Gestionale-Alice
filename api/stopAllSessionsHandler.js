@@ -26,20 +26,28 @@ export const stopAllSessionsHandler = async () => {
   }
 
   const endTime = new Date().toISOString();
+  const carIds = [...new Set(activeSessions.map(s => s.carId))];
+
+  // Calcola le durate in memoria prima di scrivere sul DB
+  const closedSessions = activeSessions.map(session => ({
+    ...session,
+    endTime,
+    durationMinutes: Math.floor((new Date(endTime) - new Date(session.startTime)) / 60000),
+  }));
+  const closedDurationMap = new Map(closedSessions.map(s => [s.PK, s.durationMinutes]));
 
   // Chiude ogni sessione attiva
-  for (const session of activeSessions) {
-    const durationMinutes = Math.floor((new Date(endTime) - new Date(session.startTime)) / 60000);
+  for (const session of closedSessions) {
     await ddbDocClient.send(new PutCommand({
       TableName: TABLE_NAME,
-      Item: { ...session, endTime, durationMinutes },
+      Item: session,
     }));
   }
 
   // Aggiorna totalHours e status di ogni macchina coinvolta
-  const carIds = [...new Set(activeSessions.map(s => s.carId))];
-
   for (const carId of carIds) {
+    // Recupera tutte le sessioni storiche (incluse quelle non attive)
+    // per calcolare il totale corretto
     const { Items: allSessions = [] } = await ddbDocClient.send(new QueryCommand({
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
@@ -47,13 +55,9 @@ export const stopAllSessionsHandler = async () => {
       ExpressionAttributeValues: { ':carPk': `${CAR_PK_PREFIX}${carId}` },
     }));
 
-    // Usa le durate aggiornate per le sessioni appena chiuse
+    // Usa le durate calcolate in memoria per le sessioni appena chiuse
     const totalMins = allSessions.reduce((acc, s) => {
-      const stopped = activeSessions.find(a => a.PK === s.PK);
-      const dur = stopped
-        ? Math.floor((new Date(endTime) - new Date(s.startTime)) / 60000)
-        : (s.durationMinutes || 0);
-      return acc + dur;
+      return acc + (closedDurationMap.has(s.PK) ? closedDurationMap.get(s.PK) : (s.durationMinutes || 0));
     }, 0);
 
     const totalHoursStr = `${Math.floor(totalMins / 60)}h ${totalMins % 60}m`;

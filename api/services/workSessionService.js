@@ -93,67 +93,62 @@ export default function workSessionService() {
     if(!req.user || !carId || !operatorName) {
       throw new Error('User not logged in or invalid parameters');
     }
-    
-    // Find active session
-    const params = {
-      TableName: TABLE_NAME,
-      IndexName: 'GSI1',
-      KeyConditionExpression: 'GSI1PK = :carPk',
-      FilterExpression: 'operatorName = :opName AND attribute_not_exists(endTime)',
-      ExpressionAttributeValues: {
-        ':carPk': `${CAR_PK_PREFIX}${carId}`,
-        ':opName': operatorName
-      }
-    };
 
-    const data = await ddbDocClient.send(new QueryCommand(params));
-    if (!data.Items || data.Items.length === 0) return null;
+    // Legge in parallelo: sessione attiva dell'operatore + tutte le sessioni della macchina
+    // Le due query vengono fatte PRIMA di qualsiasi scrittura per avere dati consistenti
+    const [activeData, allSessionsData] = await Promise.all([
+      ddbDocClient.send(new QueryCommand({
+        TableName: TABLE_NAME,
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :carPk',
+        FilterExpression: 'operatorName = :opName AND attribute_not_exists(endTime)',
+        ExpressionAttributeValues: {
+          ':carPk': `${CAR_PK_PREFIX}${carId}`,
+          ':opName': operatorName
+        }
+      })),
+      ddbDocClient.send(new QueryCommand({
+        TableName: TABLE_NAME,
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :carPk',
+        ExpressionAttributeValues: { ':carPk': `${CAR_PK_PREFIX}${carId}` }
+      })),
+    ]);
 
-    const activeSession = data.Items[0];
+    if (!activeData.Items || activeData.Items.length === 0) return null;
+
+    const activeSession = activeData.Items[0];
     const endTime = new Date().toISOString();
-    const startTime = new Date(activeSession.startTime);
-    const durationMs = new Date(endTime) - startTime;
-    const durationMinutes = Math.floor(durationMs / 60000);
+    const durationMinutes = Math.floor((new Date(endTime) - new Date(activeSession.startTime)) / 60000);
 
-    activeSession.endTime = endTime;
-    activeSession.durationMinutes = durationMinutes;
+    const closedSession = { ...activeSession, endTime, durationMinutes };
 
     await ddbDocClient.send(new PutCommand({
       TableName: TABLE_NAME,
-      Item: activeSession
+      Item: closedSession
     }));
 
-    // Update totalHours on Car
-    const allSessionsParams = {
-      TableName: TABLE_NAME,
-      IndexName: 'GSI1',
-      KeyConditionExpression: 'GSI1PK = :carPk',
-      ExpressionAttributeValues: {
-        ':carPk': `${CAR_PK_PREFIX}${carId}`
-      }
-    };
-    const sessionsData = await ddbDocClient.send(new QueryCommand(allSessionsParams));
-    const totalMins = (sessionsData.Items || []).reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
+    // Calcola totalHours in memoria usando i dati letti prima della scrittura
+    // (evita il bug di eventual consistency del GSI: la seconda query potrebbe
+    // non vedere ancora endTime della sessione appena chiusa)
+    const allSessions = allSessionsData.Items || [];
+    const totalMins = allSessions.reduce((acc, s) => {
+      if (s.PK === activeSession.PK) return acc + durationMinutes;
+      return acc + (s.durationMinutes || 0);
+    }, 0);
+
     const h = Math.floor(totalMins / 60);
     const m = totalMins % 60;
-    const totalHoursStr = `${h}h ${m}m`;
 
     await ddbDocClient.send(new UpdateCommand({
       TableName: TABLE_NAME,
-      Key: {
-        PK: `${CAR_PK_PREFIX}${carId}`,
-        SK: CAR_SK_PREFIX
-      },
+      Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
       UpdateExpression: 'set totalHours = :th',
-      ExpressionAttributeValues: {
-        ':th': totalHoursStr
-      }
+      ExpressionAttributeValues: { ':th': `${h}h ${m}m` }
     }));
 
-    // Se non ci sono altre sessioni attive, riporta la macchina a waiting
-    const remainingActive = (sessionsData.Items || []).filter(s =>
-      !s.endTime && s.PK !== activeSession.PK
-    );
+    // Controlla remaining active in memoria (stessa ragione: no seconda query GSI)
+    const remainingActive = allSessions.filter(s => !s.endTime && s.PK !== activeSession.PK);
     if (remainingActive.length === 0) {
       try {
         await ddbDocClient.send(new UpdateCommand({
@@ -169,7 +164,7 @@ export default function workSessionService() {
       }
     }
 
-    return activeSession;
+    return closedSession;
   }
 
   async function getActive(req, carId) {
