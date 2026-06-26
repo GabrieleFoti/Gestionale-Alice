@@ -4,19 +4,17 @@ import { SESSION_PK_PREFIX, SESSION_SK_PREFIX, toSessionItem } from "../entities
 import { CAR_PK_PREFIX, CAR_SK_PREFIX } from "../entities/car.js";
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
+const OPERATOR_PK_PREFIX = 'OPERATOR#';
 
 export default function workSessionService() {
   async function getActiveByOperator(operatorName) {
-    const params = {
+    const data = await ddbDocClient.send(new QueryCommand({
       TableName: TABLE_NAME,
-      FilterExpression: 'operatorName = :opName AND attribute_not_exists(endTime) AND #t = :sessionType',
-      ExpressionAttributeNames: { '#t': 'type' },
-      ExpressionAttributeValues: {
-        ':opName': operatorName,
-        ':sessionType': 'SESSION'
-      }
-    };
-    const data = await ddbDocClient.send(new ScanCommand(params));
+      IndexName: 'GSI2',
+      KeyConditionExpression: 'GSI2PK = :opPk',
+      FilterExpression: 'attribute_not_exists(endTime)',
+      ExpressionAttributeValues: { ':opPk': `${OPERATOR_PK_PREFIX}${operatorName}` },
+    }));
     return data.Items || [];
   }
 

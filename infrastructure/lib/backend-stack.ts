@@ -36,6 +36,13 @@ export class PanzaniDesignBackendStack extends cdk.Stack {
       sortKey: { name: 'GSI1SK', type: cdk.aws_dynamodb.AttributeType.STRING },
     });
 
+    // GSI2: To query all sessions for a given operator (GSI2PK="OPERATOR#name")
+    table.addGlobalSecondaryIndex({
+      indexName: 'GSI2',
+      partitionKey: { name: 'GSI2PK', type: cdk.aws_dynamodb.AttributeType.STRING },
+      sortKey: { name: 'GSI2SK', type: cdk.aws_dynamodb.AttributeType.STRING },
+    });
+
     // =========================
     // Lambda
     // =========================
