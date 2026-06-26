@@ -1,22 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { operators } from '../utils/mockData';
 import OperatorColumn from '../components/OperatorColumn';
 import { useGetCars } from '../hooks/useCars';
+import { useGetAllActiveSessions } from '../hooks/useSessions';
 
 const OperatorView = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [machines, setMachines] = useState([]);
+  const [activeMachines, setActiveMachines] = useState({});
+
+  const { execute: fetchAllActive } = useGetAllActiveSessions({
+    onSuccess: (sessions) => {
+      const map = {};
+      sessions.forEach(s => {
+        map[s.operatorName] = s.carId;
+      });
+      setActiveMachines(map);
+    }
+  });
 
   const { execute: fetchMachines, loading: isLoading } = useGetCars({
     filter: (m) => m.status !== 'completed',
     onSuccess: (data) => setMachines(data)
   });
 
-  useEffect(() => {
+  const refreshAll = useCallback(() => {
     fetchMachines();
+    fetchAllActive();
+  }, [fetchMachines, fetchAllActive]);
+
+  useEffect(() => {
+    refreshAll();
   }, []);
 
   if (isLoading) {
@@ -37,6 +54,8 @@ const OperatorView = () => {
               <OperatorColumn
                 operator={operator}
                 machines={machines}
+                activeMachineId={activeMachines[operator.name] || null}
+                onSessionChange={refreshAll}
               />
             </div>
           ))}

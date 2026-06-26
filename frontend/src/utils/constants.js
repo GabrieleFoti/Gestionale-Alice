@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   SESSIONS: '/sessions',
   SESSION_START: '/sessions/start',
   SESSION_STOP: '/sessions/stop',
+  SESSION_ALL_ACTIVE: '/sessions/active',
   SESSION_ACTIVE: (carId) => `/sessions/active/${carId}`,
   SESSION_BY_CAR: (carId) => `/sessions/car/${carId}`,
   CAR_BY_ID: (carId) => `/cars/${carId}`,

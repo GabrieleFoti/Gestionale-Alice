@@ -1,19 +1,52 @@
 import ddbDocClient from "../db.js";
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { SESSION_PK_PREFIX, SESSION_SK_PREFIX, toSessionItem } from "../entities/workSession.js";
 import { CAR_PK_PREFIX, CAR_SK_PREFIX } from "../entities/car.js";
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 
 export default function workSessionService() {
+  async function getActiveByOperator(operatorName) {
+    const params = {
+      TableName: TABLE_NAME,
+      FilterExpression: 'operatorName = :opName AND attribute_not_exists(endTime) AND #t = :sessionType',
+      ExpressionAttributeNames: { '#t': 'type' },
+      ExpressionAttributeValues: {
+        ':opName': operatorName,
+        ':sessionType': 'SESSION'
+      }
+    };
+    const data = await ddbDocClient.send(new ScanCommand(params));
+    return data.Items || [];
+  }
+
+  async function getAllActive(req) {
+    if (!req.user) throw new Error('User not logged in');
+    const params = {
+      TableName: TABLE_NAME,
+      FilterExpression: 'attribute_not_exists(endTime) AND #t = :sessionType',
+      ExpressionAttributeNames: { '#t': 'type' },
+      ExpressionAttributeValues: { ':sessionType': 'SESSION' }
+    };
+    const data = await ddbDocClient.send(new ScanCommand(params));
+    return data.Items || [];
+  }
+
   async function start(req, carId, operatorName) {
     if(!req.user || !carId || !operatorName) {
       throw new Error('User not logged in or invalid parameters');
     }
-    
+
+    // Auto-stop any active session this operator has on a different car
+    const operatorActiveSessions = await getActiveByOperator(operatorName);
+    const otherCarSessions = operatorActiveSessions.filter(s => s.carId !== carId);
+    const stoppedCars = [];
+    for (const session of otherCarSessions) {
+      await stop(req, session.carId, operatorName);
+      stoppedCars.push(session.carId);
+    }
+
     // Check if there is already an active session for this operator and car
-    // In a real STD we might use a GSI or a specific PK/SK combo for "ACTIVE"
-    // For now, let's query by GSI1 (Car) and filter 
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
@@ -26,7 +59,7 @@ export default function workSessionService() {
     };
 
     const data = await ddbDocClient.send(new QueryCommand(params));
-    if (data.Items && data.Items.length > 0) return data.Items[0];
+    if (data.Items && data.Items.length > 0) return { ...data.Items[0], stoppedCars };
 
     const session = toSessionItem({
       carId,
@@ -53,7 +86,7 @@ export default function workSessionService() {
       if (e.name !== 'ConditionalCheckFailedException') throw e;
     }
 
-    return session;
+    return { ...session, stoppedCars };
   }
 
   async function stop(req, carId, operatorName) {
@@ -181,6 +214,7 @@ export default function workSessionService() {
     start,
     stop,
     getActive,
+    getAllActive,
     getByCar
   };
 }

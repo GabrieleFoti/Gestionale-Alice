@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { useGetActiveSessions, useStartSession, useStopSession } from '../hooks/useSessions';
 import { useUpdateCar, useCompleteCar } from '../hooks/useCars';
 
-export default function SelectedMachineView({ selectedMachine, handleBack, operatorName, hideHeader = false }) {
+export default function SelectedMachineView({ selectedMachine, handleBack, operatorName, hideHeader = false, onSessionChange }) {
 
   const [note, setNote] = useState(selectedMachine.note);
   const [lavorazioni, setLavorazioni] = useState(selectedMachine.lavorazioni);
@@ -20,11 +21,20 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
   });
 
   const { execute: startSession } = useStartSession({
-    onSuccess: () => setIsWorking(true)
+    onSuccess: (result) => {
+      setIsWorking(true);
+      if (result?.stoppedCars?.length > 0) {
+        toast('Lavorazione precedente fermata automaticamente', { icon: '⚠️' });
+      }
+      if (onSessionChange) onSessionChange();
+    }
   });
 
   const { execute: stopSession } = useStopSession({
-    onSuccess: () => setIsWorking(false)
+    onSuccess: () => {
+      setIsWorking(false);
+      if (onSessionChange) onSessionChange();
+    }
   });
 
   const { execute: updateCar } = useUpdateCar();

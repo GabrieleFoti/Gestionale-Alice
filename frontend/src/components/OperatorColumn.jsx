@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import SelectedMachineView from './SelectedMachineView';
 
-const OperatorColumn = ({ operator, machines }) => {
+const OperatorColumn = ({ operator, machines, activeMachineId, onSessionChange }) => {
   const [selectedMachine, setSelectedMachine] = useState(null);
 
   const handleMachineSelect = (machine) => {
@@ -10,6 +10,7 @@ const OperatorColumn = ({ operator, machines }) => {
 
   const handleBack = () => {
     setSelectedMachine(null);
+    if (onSessionChange) onSessionChange();
   };
 
   return (
@@ -27,6 +28,9 @@ const OperatorColumn = ({ operator, machines }) => {
           </button>
         )}
         <p className="text-brand-text-200">{operator.name}</p>
+        {activeMachineId && !selectedMachine && (
+          <span className="absolute right-2 w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" title="In lavorazione" />
+        )}
       </div>
 
       {/* Content - machine grid or detail */}
@@ -37,26 +41,38 @@ const OperatorColumn = ({ operator, machines }) => {
             handleBack={handleBack}
             operatorName={operator.name}
             hideHeader={true}
+            onSessionChange={onSessionChange}
           />
         ) : (
           <div className="grid grid-cols-2 gap-3 content-start p-4">
-          {machines.map((machine, index) => (
-            <button
-              key={index}
-              onClick={() => machine && handleMachineSelect(machine)}
-              disabled={!machine}
-              className={`
-                aspect-square rounded-2xl border-2 font-bold text-lg transition flex flex-col items-center justify-center text-center
-                ${machine
-                  ? 'shadow-sm text-brand-text-700 bg-brand-bg border-brand-text-700'
-                  : 'opacity-50 cursor-not-allowed text-brand-text/20 bg-brand-text/5 border-brand-text-700/80'
-                }
-              `}
-            >
-              <span>{machine.model}</span>
-              <span>{machine.plate}</span>
-            </button>
-          ))}
+          {machines.map((machine, index) => {
+            const isActive = machine && machine.id === activeMachineId;
+            return (
+              <button
+                key={index}
+                onClick={() => machine && handleMachineSelect(machine)}
+                disabled={!machine}
+                className={`
+                  relative aspect-square rounded-2xl border-2 font-bold text-lg transition flex flex-col items-center justify-center text-center
+                  ${!machine
+                    ? 'opacity-50 cursor-not-allowed text-brand-text/20 bg-brand-text/5 border-brand-text-700/80'
+                    : isActive
+                    ? 'shadow-md text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20 border-green-500 ring-2 ring-green-400/50'
+                    : 'shadow-sm text-brand-text-700 bg-brand-bg border-brand-text-700'
+                  }
+                `}
+              >
+                {isActive && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                )}
+                <span>{machine.model}</span>
+                <span>{machine.plate}</span>
+                {isActive && (
+                  <span className="mt-1 text-[9px] font-semibold tracking-widest uppercase text-green-600 dark:text-green-400">In corso</span>
+                )}
+              </button>
+            );
+          })}
         </div>
         )}
       </div>

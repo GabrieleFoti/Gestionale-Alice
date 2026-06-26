@@ -54,6 +54,12 @@ export default function routes(services) {
       requireAuth: true
     },
     {
+      path: '/api/sessions/active',
+      method: 'GET',
+      handler: (req) => services.workSessions.getAllActive(req),
+      requireAuth: true
+    },
+    {
       path: '/api/sessions/active/:carId',
       method: 'GET',
       handler: (req) => services.workSessions.getActive(req, req.params.carId),

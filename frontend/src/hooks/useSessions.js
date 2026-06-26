@@ -43,6 +43,36 @@ export const useGetCarSessions = ({ onSuccess, onError } = {}) => {
 };
 
 /**
+ * Hook to get all active sessions across all cars and operators
+ */
+export const useGetAllActiveSessions = ({ onSuccess, onError } = {}) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState([]);
+
+  const execute = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.SESSION_ALL_ACTIVE}`);
+      if (!response.ok) throw new Error('Errore nel caricamento delle sessioni attive');
+      const result = await response.json();
+      setData(result);
+      if (onSuccess) onSuccess(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      if (onError) onError(err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [onSuccess, onError]);
+
+  return { execute, loading, error, data };
+};
+
+/**
  * Hook to get active sessions for a specific car
  * @param {Object} options - Configuration options
  * @param {Function} options.onSuccess - Callback on successful fetch
