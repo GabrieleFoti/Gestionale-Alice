@@ -115,8 +115,9 @@ export default function handler(apiRoutes) {
     } catch (error) {
       console.error('API Error:', error);
       const isAuthError = error.message === 'User not found' || error.message === 'Invalid credentials';
-      const statusCode = isAuthError ? 401 : 500;
-      const clientMessage = isAuthError ? error.message : 'Internal server error';
+      const isTooManyRequests = error.statusCode === 429;
+      const statusCode = isTooManyRequests ? 429 : isAuthError ? 401 : 500;
+      const clientMessage = (isTooManyRequests || isAuthError) ? error.message : 'Internal server error';
       res.status(statusCode).json({ error: clientMessage });
       return lambdaRes;
     }

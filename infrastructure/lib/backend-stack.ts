@@ -27,6 +27,7 @@ export class PanzaniDesignBackendStack extends cdk.Stack {
       sortKey: { name: 'SK', type: cdk.aws_dynamodb.AttributeType.STRING },
       billingMode: cdk.aws_dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep data on stack deletion
+      timeToLiveAttribute: 'ttl',
     });
 
     // GSI1: To list all items of a type (e.g., GSI1PK="CAR", GSI1SK="PLATE")
