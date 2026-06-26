@@ -76,9 +76,9 @@ const ArchivioView = () => {
               <div>
                 <p className="font-semibold text-brand-text">{machine.name}</p>
                 <p className="mt-1 text-sm text-brand-text/70 line-clamp-2">{machine.lavorazioni}</p>
-                {machine.totalHours && (
+                {machine.totalMinutes > 0 && (
                   <p className="mt-1 text-sm font-semibold text-brand-text">
-                    Totale: {machine.totalHours}
+                    Totale: {Math.floor(machine.totalMinutes / 60)}h {machine.totalMinutes % 60}m
                   </p>
                 )}
               </div>

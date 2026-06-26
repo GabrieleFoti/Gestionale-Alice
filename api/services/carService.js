@@ -12,8 +12,7 @@ const toApiModel = (item) => ({
     status: item.status,
     lavorazioni: item.lavorazioni,
     note: item.note,
-    partialHours: item.partialHours,
-    totalHours: item.totalHours,
+    totalMinutes: item.totalMinutes ?? 0,
     photo: item.photo,
     assicurazione: item.assicurazione
 });
