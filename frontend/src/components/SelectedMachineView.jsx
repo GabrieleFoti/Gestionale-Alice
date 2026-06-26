@@ -20,7 +20,7 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
     }
   });
 
-  const { execute: startSession } = useStartSession({
+  const { execute: startSession, loading: isStarting } = useStartSession({
     onSuccess: (result) => {
       setIsWorking(true);
       if (result?.stoppedCars?.length > 0) {
@@ -30,7 +30,7 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
     }
   });
 
-  const { execute: stopSession } = useStopSession({
+  const { execute: stopSession, loading: isStopping } = useStopSession({
     onSuccess: () => {
       setIsWorking(false);
       if (onSessionChange) onSessionChange();
@@ -117,12 +117,13 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
         ) : (
           <button
             onClick={handleWorkToggle}
-            className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition uppercase tracking-widest ${isWorking
+            disabled={isStarting || isStopping}
+            className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isWorking
                 ? 'text-white bg-red-600 border-red-700 hover:bg-red-700'
                 : 'text-brand-text-700 border-brand-text-700 hover:opacity-90'
               }`}
           >
-            {isWorking ? 'Stop' : 'Avvia'}
+            {(isStarting || isStopping) ? '...' : (isWorking ? 'Stop' : 'Avvia')}
           </button>
         )}
         <button
