@@ -62,6 +62,11 @@ export default function handler(apiRoutes) {
         }
       }
 
+      if (route.requireAdmin && req.user?.role !== 'admin') {
+        res.status(403).json({ error: 'Accesso negato: richiesto ruolo admin' });
+        return lambdaRes;
+      }
+
       let routePath = route.path;
       if (routePath.length > 1 && routePath.endsWith('/')) {
         routePath = routePath.slice(0, -1);
