@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import { API_BASE_URL, API_ENDPOINTS } from '../utils/constants';
 import toast from 'react-hot-toast';
+import { createApiHook } from './createApiHook';
 
 /**
  * Hook to fetch all cars with optional filtering
@@ -48,87 +49,18 @@ export const useGetCars = ({ onSuccess, onError, filter } = {}) => {
   return { execute, loading, error, data };
 };
 
-/**
- * Hook to create a new car
- * @param {Object} options - Configuration options
- * @param {Function} options.onSuccess - Callback on successful creation
- * @param {Function} options.onError - Callback on error
- */
-export const useCreateCar = ({ onSuccess, onError } = {}) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useCreateCar = createApiHook(API_ENDPOINTS.CARS, {
+  method: 'POST',
+  successMessage: 'Macchina creata',
+  buildBody: (carData) => carData,
+});
 
-  const execute = useCallback(async (carData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CARS}`, {
-        method: 'POST',
-        body: JSON.stringify(carData)
-      });
-
-      if (!response.ok) throw new Error('Errore durante la creazione');
-      
-      const result = await response.json();
-      toast.success('Macchina creata');
-      if (onSuccess) onSuccess(result);
-      return result;
-    } catch (err) {
-      setError(err.message);
-      if (onError) {
-        onError(err);
-      } else {
-        toast.error(err.message);
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [onSuccess, onError]);
-
-  return { execute, loading, error };
-};
-
-/**
- * Hook to update a car
- * @param {Object} options - Configuration options
- * @param {Function} options.onSuccess - Callback on successful update
- * @param {Function} options.onError - Callback on error
- */
-export const useUpdateCar = ({ onSuccess, onError } = {}) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const execute = useCallback(async (carId, updates) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CAR_BY_ID(carId)}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates)
-      });
-
-      if (!response.ok) throw new Error('Errore durante il salvataggio');
-      
-      const result = await response.json();
-      toast.success('Modifiche salvate');
-      if (onSuccess) onSuccess(result);
-      return result;
-    } catch (err) {
-      setError(err.message);
-      if (onError) {
-        onError(err);
-      } else {
-        toast.error(err.message);
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [onSuccess, onError]);
-
-  return { execute, loading, error };
-};
+export const useUpdateCar = createApiHook(null, {
+  method: 'PUT',
+  successMessage: 'Modifiche salvate',
+  buildUrl: (carId) => API_ENDPOINTS.CAR_BY_ID(carId),
+  buildBody: (carId, updates) => updates,
+});
 
 /**
  * Hook to delete a car
@@ -173,84 +105,16 @@ export const useDeleteCar = ({ onSuccess, onError } = {}) => {
   return { execute, loading, error };
 };
 
-/**
- * Hook to mark a car as completed
- * @param {Object} options - Configuration options
- * @param {Function} options.onSuccess - Callback on successful completion
- * @param {Function} options.onError - Callback on error
- */
-export const useCompleteCar = ({ onSuccess, onError } = {}) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useCompleteCar = createApiHook(null, {
+  method: 'PUT',
+  successMessage: 'Macchina completata',
+  buildUrl: (carId) => API_ENDPOINTS.CAR_BY_ID(carId),
+  buildBody: () => ({ status: 'completed' }),
+});
 
-  const execute = useCallback(async (carId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CAR_BY_ID(carId)}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'completed' })
-      });
-
-      if (!response.ok) throw new Error('Errore durante il completamento');
-      
-      const result = await response.json();
-      toast.success('Macchina completata');
-      if (onSuccess) onSuccess(result);
-      return result;
-    } catch (err) {
-      setError(err.message);
-      if (onError) {
-        onError(err);
-      } else {
-        toast.error(err.message);
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [onSuccess, onError]);
-
-  return { execute, loading, error };
-};
-
-/**
- * Hook to restore a car to in_progress status
- * @param {Object} options - Configuration options
- * @param {Function} options.onSuccess - Callback on successful restore
- * @param {Function} options.onError - Callback on error
- */
-export const useRestoreCar = ({ onSuccess, onError } = {}) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const execute = useCallback(async (carId) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetchWithAuth(`${API_BASE_URL}${API_ENDPOINTS.CAR_BY_ID(carId)}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status: 'waiting' })
-      });
-
-      if (!response.ok) throw new Error('Errore durante il ripristino');
-      
-      const result = await response.json();
-      toast.success('Macchina riportata in lavorazione');
-      if (onSuccess) onSuccess(result);
-      return result;
-    } catch (err) {
-      setError(err.message);
-      if (onError) {
-        onError(err);
-      } else {
-        toast.error(err.message);
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [onSuccess, onError]);
-
-  return { execute, loading, error };
-};
+export const useRestoreCar = createApiHook(null, {
+  method: 'PUT',
+  successMessage: 'Macchina riportata in lavorazione',
+  buildUrl: (carId) => API_ENDPOINTS.CAR_BY_ID(carId),
+  buildBody: () => ({ status: 'waiting' }),
+});
