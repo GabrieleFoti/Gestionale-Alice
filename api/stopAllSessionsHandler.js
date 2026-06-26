@@ -60,13 +60,11 @@ export const stopAllSessionsHandler = async () => {
       return acc + (closedDurationMap.has(s.PK) ? closedDurationMap.get(s.PK) : (s.durationMinutes || 0));
     }, 0);
 
-    const totalHoursStr = `${Math.floor(totalMins / 60)}h ${totalMins % 60}m`;
-
     await ddbDocClient.send(new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-      UpdateExpression: 'set totalHours = :th',
-      ExpressionAttributeValues: { ':th': totalHoursStr },
+      UpdateExpression: 'set totalMinutes = :tm',
+      ExpressionAttributeValues: { ':tm': totalMins },
     }));
 
     // Riporta la macchina a "waiting" (solo se non è già completata)

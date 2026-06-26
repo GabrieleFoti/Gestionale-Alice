@@ -65,12 +65,14 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
     }
   }, [machine.id, isNew]);
 
-  const totalMinutes = sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
   const formatDuration = (mins) => {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
     return `${h}h ${m}m`;
   };
+
+  // Usa totalMinutes dal DB se disponibile, altrimenti somma le sessioni locali
+  const totalMinutes = machine?.totalMinutes ?? sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
 
   const handleDelete = async () => {
     await deleteCar(machine.id);

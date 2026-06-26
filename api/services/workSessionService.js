@@ -137,14 +137,11 @@ export default function workSessionService() {
       return acc + (s.durationMinutes || 0);
     }, 0);
 
-    const h = Math.floor(totalMins / 60);
-    const m = totalMins % 60;
-
     await ddbDocClient.send(new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-      UpdateExpression: 'set totalHours = :th',
-      ExpressionAttributeValues: { ':th': `${h}h ${m}m` }
+      UpdateExpression: 'set totalMinutes = :tm',
+      ExpressionAttributeValues: { ':tm': totalMins }
     }));
 
     // Controlla remaining active in memoria (stessa ragione: no seconda query GSI)
