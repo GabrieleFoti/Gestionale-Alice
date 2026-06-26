@@ -1,6 +1,7 @@
 import ddbDocClient from "../db.js";
 import { PutCommand, GetCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { CAR_PK_PREFIX, CAR_SK_PREFIX, toCarItem } from "../entities/car.js";
+import { randomUUID } from 'crypto';
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 
@@ -48,7 +49,7 @@ export default function carService() {
 
     async function create(req, data) {
         if(!req.user) throw new Error('User not logged in');
-        const id = Date.now().toString();
+        const id = randomUUID();
         const item = toCarItem({ ...data, id, status: 'waiting' });
         await ddbDocClient.send(new PutCommand({
             TableName: TABLE_NAME,
