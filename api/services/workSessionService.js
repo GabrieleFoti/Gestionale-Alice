@@ -1,5 +1,5 @@
 import ddbDocClient from "../db.js";
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand, ScanCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { SESSION_PK_PREFIX, SESSION_SK_PREFIX, toSessionItem } from "../entities/workSession.js";
 import { CAR_PK_PREFIX, CAR_SK_PREFIX } from "../entities/car.js";
 
@@ -67,23 +67,29 @@ export default function workSessionService() {
       startTime: new Date().toISOString()
     });
 
-    await ddbDocClient.send(new PutCommand({
-      TableName: TABLE_NAME,
-      Item: session
-    }));
-
-    // Porta la macchina in lavorazione (solo se non è già completata)
     try {
-      await ddbDocClient.send(new UpdateCommand({
-        TableName: TABLE_NAME,
-        Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-        UpdateExpression: 'set #s = :inProgress',
-        ConditionExpression: '#s <> :completed',
-        ExpressionAttributeNames: { '#s': 'status' },
-        ExpressionAttributeValues: { ':inProgress': 'in_progress', ':completed': 'completed' },
+      await ddbDocClient.send(new TransactWriteCommand({
+        TransactItems: [
+          { Put: { TableName: TABLE_NAME, Item: session } },
+          {
+            Update: {
+              TableName: TABLE_NAME,
+              Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
+              UpdateExpression: 'set #s = :inProgress',
+              ConditionExpression: '#s <> :completed',
+              ExpressionAttributeNames: { '#s': 'status' },
+              ExpressionAttributeValues: { ':inProgress': 'in_progress', ':completed': 'completed' },
+            }
+          }
+        ]
       }));
     } catch (e) {
-      if (e.name !== 'ConditionalCheckFailedException') throw e;
+      if (e.name === 'TransactionCanceledException') {
+        // La macchina è già completata — avvia la sessione senza aggiornare lo status
+        await ddbDocClient.send(new PutCommand({ TableName: TABLE_NAME, Item: session }));
+      } else {
+        throw e;
+      }
     }
 
     return { ...session, stoppedCars };
