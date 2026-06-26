@@ -79,6 +79,17 @@ export default function handler(apiRoutes) {
         return lambdaRes;
       }
 
+      if (route.requiredBody) {
+        const missing = route.requiredBody.filter(field => {
+          const val = req.body[field];
+          return val === undefined || val === null || val === '';
+        });
+        if (missing.length > 0) {
+          res.status(400).json({ error: `Campi obbligatori mancanti: ${missing.join(', ')}` });
+          return lambdaRes;
+        }
+      }
+
       let routePath = route.path;
       if (routePath.length > 1 && routePath.endsWith('/')) {
         routePath = routePath.slice(0, -1);

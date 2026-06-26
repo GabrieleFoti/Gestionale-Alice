@@ -1,11 +1,12 @@
 export default function routes(services) {
   return [
     // Auth routes
-    { 
-      path: '/api/auth/login', 
-      method: 'POST', 
+    {
+      path: '/api/auth/login',
+      method: 'POST',
       handler: (req) => services.auth.login(req.body),
-      requireAuth: false
+      requireAuth: false,
+      requiredBody: ['username', 'password']
     },
     
     // Car routes
@@ -26,7 +27,8 @@ export default function routes(services) {
       method: 'POST',
       handler: (req) => services.cars.create(req, req.body),
       requireAuth: true,
-      requireAdmin: true
+      requireAdmin: true,
+      requiredBody: ['model', 'plate']
     },
     {
       path: '/api/cars/:id',
@@ -48,13 +50,15 @@ export default function routes(services) {
       path: '/api/sessions/start',
       method: 'POST',
       handler: (req) => services.workSessions.start(req, req.body.carId, req.body.operatorName),
-      requireAuth: true
+      requireAuth: true,
+      requiredBody: ['carId', 'operatorName']
     },
     {
       path: '/api/sessions/stop',
       method: 'POST',
       handler: (req) => services.workSessions.stop(req, req.body.carId, req.body.operatorName),
-      requireAuth: true
+      requireAuth: true,
+      requiredBody: ['carId', 'operatorName']
     },
     {
       path: '/api/sessions/active',
