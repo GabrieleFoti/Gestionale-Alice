@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-south-1', profile: 'PanzaniDesign' });
 const ddbDocClient = DynamoDBDocumentClient.from(client, {
     marshallOptions: {
         removeUndefinedValues: true,

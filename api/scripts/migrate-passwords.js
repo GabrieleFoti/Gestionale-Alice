@@ -2,7 +2,7 @@ import ddbDocClient from '../db.js';
 import { ScanCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import bcrypt from 'bcryptjs';
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
+const TABLE_NAME = 'PanzaniDesign';
 
 const { Items: users = [] } = await ddbDocClient.send(new ScanCommand({
   TableName: TABLE_NAME,
