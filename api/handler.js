@@ -9,11 +9,23 @@ export default function handler(apiRoutes) {
     };
 
       const event = req;
+      let body = {};
+      if (event.body) {
+        if (typeof event.body === 'string') {
+          try {
+            body = JSON.parse(event.body);
+          } catch {
+            return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON in request body' }), headers: { 'Content-Type': 'application/json' } };
+          }
+        } else {
+          body = event.body;
+        }
+      }
       req = {
         method: event.requestContext?.http?.method,
         url: event.rawPath + (event.rawQueryString ? '?' + event.rawQueryString : ''),
         headers: event.headers || {},
-        body: event.body ? (typeof event.body === 'string' ? JSON.parse(event.body) : event.body) : {}
+        body,
       };
       res = {
         status: (code) => {
