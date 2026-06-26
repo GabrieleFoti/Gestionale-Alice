@@ -21,23 +21,26 @@ export default function routes(services) {
       handler: (req) => services.cars.getById(req, req.params.id),
       requireAuth: true
     },
-    { 
-      path: '/api/cars', 
-      method: 'POST', 
+    {
+      path: '/api/cars',
+      method: 'POST',
       handler: (req) => services.cars.create(req, req.body),
-      requireAuth: true
+      requireAuth: true,
+      requireAdmin: true
     },
-    { 
-      path: '/api/cars/:id', 
-      method: 'PUT', 
+    {
+      path: '/api/cars/:id',
+      method: 'PUT',
       handler: (req) => services.cars.update(req, req.params.id, req.body),
-      requireAuth: true
+      requireAuth: true,
+      requireAdmin: true
     },
-    { 
-      path: '/api/cars/:id', 
-      method: 'DELETE', 
+    {
+      path: '/api/cars/:id',
+      method: 'DELETE',
       handler: (req) => services.cars.remove(req, req.params.id),
-      requireAuth: true
+      requireAuth: true,
+      requireAdmin: true
     },
     
     // Work Session routes
