@@ -23,12 +23,13 @@ export default function authService() {
 
             if (!user) throw new Error('User not found');
 
-            const isValid = password === user.password;
+            const isValid = await bcrypt.compare(password, user.password);
             if (!isValid) throw new Error('Invalid credentials');
 
             const token = jwt.sign(
                 { id: user.PK, username: user.username, role: user.role },
-                JWT_SECRET
+                JWT_SECRET,
+                { expiresIn: '8h' }
             );
 
             return { token, user: { username: user.username, role: user.role } };
