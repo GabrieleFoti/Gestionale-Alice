@@ -8,15 +8,15 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
   const [note, setNote] = useState(selectedMachine.note);
   const [lavorazioni, setLavorazioni] = useState(selectedMachine.lavorazioni);
   const [isWorking, setIsWorking] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [noteError, setNoteError] = useState(false);
 
   // Hooks for API operations
   const { execute: checkActiveSessions } = useGetActiveSessions({
     onSuccess: (activeSessions) => {
       const mySession = activeSessions.find(s => s.operatorName === operatorName);
-      if (mySession) {
-        setIsWorking(true);
-      }
+      setIsWorking(!!mySession);
+      setIsCheckingSession(false);
     }
   });
 
@@ -112,15 +112,19 @@ export default function SelectedMachineView({ selectedMachine, handleBack, opera
         </div>
       </div>
       <div className="mt-auto space-y-2">
-        <button
-          onClick={handleWorkToggle}
-          className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition uppercase tracking-widest ${isWorking
-              ? 'text-white bg-red-600 border-red-700 hover:bg-red-700'
-              : 'text-brand-text-700 border-brand-text-700 hover:opacity-90'
-            }`}
-        >
-          {isWorking ? 'Stop' : 'Avvia'}
-        </button>
+        {isCheckingSession ? (
+          <div className="py-3 w-full rounded-lg border animate-pulse bg-brand-bg-300 border-brand-text-700" />
+        ) : (
+          <button
+            onClick={handleWorkToggle}
+            className={`py-3 w-full text-sm font-bold rounded-lg border shadow-sm transition uppercase tracking-widest ${isWorking
+                ? 'text-white bg-red-600 border-red-700 hover:bg-red-700'
+                : 'text-brand-text-700 border-brand-text-700 hover:opacity-90'
+              }`}
+          >
+            {isWorking ? 'Stop' : 'Avvia'}
+          </button>
+        )}
         <button
           onClick={handleComplete}
           className="py-3 w-full text-sm font-bold tracking-widest uppercase rounded-lg border shadow-sm transition text-brand-text-700 bg-brand-bg border-brand-text-700 hover:bg-brand-text-700/10"
