@@ -6,10 +6,12 @@ const ddbDocClient = DynamoDBDocumentClient.from(client, {
     marshallOptions: {
         removeUndefinedValues: true,
         convertClassInstanceToMap: true,
-    }
+    },
 });
 
 export const initDB = async () => {
+    // DynamoDB doesn't need "sync" like Sequelize,
+    // but we can check connectivity or perform initial setup if needed.
     console.log('DynamoDB client initialized.');
 };
 
