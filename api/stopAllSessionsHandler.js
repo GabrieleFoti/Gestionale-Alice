@@ -1,9 +1,9 @@
 import ddbDocClient from './db.js';
-import { ScanCommand, QueryCommand, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { ScanCommand, QueryCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { finalizeCarAfterStop } from './services/workSessionService.js';
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 const CAR_PK_PREFIX = 'CAR#';
-const CAR_SK_PREFIX = 'METADATA#';
 
 export const stopAllSessionsHandler = async () => {
   const scanResult = await ddbDocClient.send(new ScanCommand({
@@ -39,42 +39,15 @@ export const stopAllSessionsHandler = async () => {
     }));
   }
 
-  // Aggiorna totalHours e status di ogni macchina coinvolta
+  // Aggiorna totalMinutes e status di ogni macchina coinvolta
   for (const carId of carIds) {
-    // Recupera tutte le sessioni storiche (incluse quelle non attive)
-    // per calcolare il totale corretto
     const { Items: allSessions = [] } = await ddbDocClient.send(new QueryCommand({
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
       KeyConditionExpression: 'GSI1PK = :carPk',
       ExpressionAttributeValues: { ':carPk': `${CAR_PK_PREFIX}${carId}` },
     }));
-
-    // Usa le durate calcolate in memoria per le sessioni appena chiuse
-    const totalMins = allSessions.reduce((acc, s) => {
-      return acc + (closedDurationMap.has(s.PK) ? closedDurationMap.get(s.PK) : (s.durationMinutes || 0));
-    }, 0);
-
-    await ddbDocClient.send(new UpdateCommand({
-      TableName: TABLE_NAME,
-      Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-      UpdateExpression: 'set totalMinutes = :tm',
-      ExpressionAttributeValues: { ':tm': totalMins },
-    }));
-
-    // Riporta la macchina a "waiting" (solo se non è già completata)
-    try {
-      await ddbDocClient.send(new UpdateCommand({
-        TableName: TABLE_NAME,
-        Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-        UpdateExpression: 'set #s = :waiting',
-        ConditionExpression: '#s <> :completed',
-        ExpressionAttributeNames: { '#s': 'status' },
-        ExpressionAttributeValues: { ':waiting': 'waiting', ':completed': 'completed' },
-      }));
-    } catch (e) {
-      if (e.name !== 'ConditionalCheckFailedException') throw e;
-    }
+    await finalizeCarAfterStop(carId, allSessions, closedDurationMap);
   }
 
   console.log(`Fermate ${activeSessions.length} lavorazioni su ${carIds.length} macchine.`);

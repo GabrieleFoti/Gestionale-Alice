@@ -6,6 +6,38 @@ import { CAR_PK_PREFIX, CAR_SK_PREFIX } from "../entities/car.js";
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
 const OPERATOR_PK_PREFIX = 'OPERATOR#';
 
+// Aggiorna totalMinutes e status macchina dopo la chiusura di sessioni.
+// allSessions: tutte le sessioni della macchina (dal DB, pre-write).
+// closedDurationMap: Map<PK, durationMinutes> delle sessioni appena chiuse in memoria.
+export async function finalizeCarAfterStop(carId, allSessions, closedDurationMap) {
+  const totalMins = allSessions.reduce((acc, s) => {
+    return acc + (closedDurationMap.has(s.PK) ? closedDurationMap.get(s.PK) : (s.durationMinutes || 0));
+  }, 0);
+
+  await ddbDocClient.send(new UpdateCommand({
+    TableName: TABLE_NAME,
+    Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
+    UpdateExpression: 'set totalMinutes = :tm',
+    ExpressionAttributeValues: { ':tm': totalMins },
+  }));
+
+  const remainingActive = allSessions.filter(s => !s.endTime && !closedDurationMap.has(s.PK));
+  if (remainingActive.length === 0) {
+    try {
+      await ddbDocClient.send(new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
+        UpdateExpression: 'set #s = :waiting',
+        ConditionExpression: '#s <> :completed',
+        ExpressionAttributeNames: { '#s': 'status' },
+        ExpressionAttributeValues: { ':waiting': 'waiting', ':completed': 'completed' },
+      }));
+    } catch (e) {
+      if (e.name !== 'ConditionalCheckFailedException') throw e;
+    }
+  }
+}
+
 export default function workSessionService() {
   async function getActiveByOperator(operatorName) {
     const data = await ddbDocClient.send(new QueryCommand({
@@ -132,38 +164,10 @@ export default function workSessionService() {
       Item: closedSession
     }));
 
-    // Calcola totalHours in memoria usando i dati letti prima della scrittura
-    // (evita il bug di eventual consistency del GSI: la seconda query potrebbe
-    // non vedere ancora endTime della sessione appena chiusa)
+    // Calcola totalMinutes e aggiorna status macchina (evita re-query GSI per eventual consistency)
     const allSessions = allSessionsData.Items || [];
-    const totalMins = allSessions.reduce((acc, s) => {
-      if (s.PK === activeSession.PK) return acc + durationMinutes;
-      return acc + (s.durationMinutes || 0);
-    }, 0);
-
-    await ddbDocClient.send(new UpdateCommand({
-      TableName: TABLE_NAME,
-      Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-      UpdateExpression: 'set totalMinutes = :tm',
-      ExpressionAttributeValues: { ':tm': totalMins }
-    }));
-
-    // Controlla remaining active in memoria (stessa ragione: no seconda query GSI)
-    const remainingActive = allSessions.filter(s => !s.endTime && s.PK !== activeSession.PK);
-    if (remainingActive.length === 0) {
-      try {
-        await ddbDocClient.send(new UpdateCommand({
-          TableName: TABLE_NAME,
-          Key: { PK: `${CAR_PK_PREFIX}${carId}`, SK: CAR_SK_PREFIX },
-          UpdateExpression: 'set #s = :waiting',
-          ConditionExpression: '#s <> :completed',
-          ExpressionAttributeNames: { '#s': 'status' },
-          ExpressionAttributeValues: { ':waiting': 'waiting', ':completed': 'completed' },
-        }));
-      } catch (e) {
-        if (e.name !== 'ConditionalCheckFailedException') throw e;
-      }
-    }
+    const closedDurationMap = new Map([[activeSession.PK, durationMinutes]]);
+    await finalizeCarAfterStop(carId, allSessions, closedDurationMap);
 
     return closedSession;
   }
