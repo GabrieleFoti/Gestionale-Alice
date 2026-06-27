@@ -7,6 +7,11 @@ const RATELIMIT_SK = 'METADATA#';
 const MAX_ATTEMPTS = 5;
 const WINDOW_SECONDS = 900; // 15 minuti
 
+// NOTA: checkRateLimit + recordFailedAttempt non sono atomiche (TOCTOU).
+// Sotto concorrenza elevata due richieste simultanee possono entrambe passare il check
+// con failCount = MAX_ATTEMPTS - 1 e poi entrambe incrementare.
+// Per un'app interna con traffico limitato il rischio è accettabile.
+// Fix atomico: usare un unico UpdateCommand con ConditionExpression e leggere il nuovo valore.
 export async function checkRateLimit(username) {
   const { Item } = await ddbDocClient.send(new GetCommand({
     TableName: TABLE_NAME,

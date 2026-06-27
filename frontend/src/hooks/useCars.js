@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { fetchWithAuth } from '../utils/api';
 import { API_BASE_URL, API_ENDPOINTS } from '../utils/constants';
 import toast from 'react-hot-toast';
@@ -15,6 +15,11 @@ export const useGetCars = ({ onSuccess, onError } = {}) => {
   const [error, setError] = useState(null);
   const [data, setData] = useState([]);
 
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const execute = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -23,12 +28,12 @@ export const useGetCars = ({ onSuccess, onError } = {}) => {
       if (!response.ok) throw new Error('Errore nel caricamento delle macchine');
       const result = await response.json();
       setData(result);
-      if (onSuccess) onSuccess(result);
+      if (onSuccessRef.current) onSuccessRef.current(result);
       return result;
     } catch (err) {
       setError(err.message);
-      if (onError) {
-        onError(err);
+      if (onErrorRef.current) {
+        onErrorRef.current(err);
       } else {
         toast.error(err.message);
       }
@@ -36,7 +41,7 @@ export const useGetCars = ({ onSuccess, onError } = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [onSuccess, onError]);
+  }, []); // stabile — nessuna dipendenza esterna
 
   return { execute, loading, error, data };
 };
