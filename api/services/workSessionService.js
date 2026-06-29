@@ -1,5 +1,5 @@
 import ddbDocClient from "../db.js";
-import { PutCommand, GetCommand, QueryCommand, UpdateCommand, ScanCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, UpdateCommand, ScanCommand, TransactWriteCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { SESSION_PK_PREFIX, SESSION_SK_PREFIX, toSessionItem } from "../entities/workSession.js";
 import { CAR_PK_PREFIX, CAR_SK_PREFIX } from "../entities/car.js";
 
@@ -157,6 +157,19 @@ export default function workSessionService() {
     const endTime = new Date().toISOString();
     const durationMinutes = Math.floor((new Date(endTime) - new Date(activeSession.startTime)) / 60000);
 
+    const allSessions = allSessionsData.Items || [];
+
+    if (durationMinutes < 1) {
+      // Sessione troppo breve: elimina dal DB senza contarla nei totali
+      await ddbDocClient.send(new DeleteCommand({
+        TableName: TABLE_NAME,
+        Key: { PK: activeSession.PK, SK: activeSession.SK }
+      }));
+      const closedDurationMap = new Map([[activeSession.PK, 0]]);
+      await finalizeCarAfterStop(carId, allSessions, closedDurationMap);
+      return null;
+    }
+
     const closedSession = { ...activeSession, endTime, durationMinutes };
 
     await ddbDocClient.send(new PutCommand({
@@ -165,7 +178,6 @@ export default function workSessionService() {
     }));
 
     // Calcola totalMinutes e aggiorna status macchina (evita re-query GSI per eventual consistency)
-    const allSessions = allSessionsData.Items || [];
     const closedDurationMap = new Map([[activeSession.PK, durationMinutes]]);
     await finalizeCarAfterStop(carId, allSessions, closedDurationMap);
 
