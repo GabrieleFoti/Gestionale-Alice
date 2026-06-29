@@ -12,41 +12,12 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   const [assicurazione, setAssicurazione] = useState(machine.assicurazione || false);
   const [sessions, setSessions] = useState([]);
 
-  // Hooks for API operations
-  const { execute: fetchSessions } = useGetCarSessions({
-    onSuccess: (data) => setSessions(data)
-  });
-
-  const { execute: createCar, loading: isCreating } = useCreateCar({
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-    }
-  });
-
-  const { execute: updateCar, loading: isUpdating } = useUpdateCar({
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-    }
-  });
-
-  const { execute: deleteCar, loading: isDeleting } = useDeleteCar({
-    onSuccess: () => {
-      if (onDelete) onDelete();
-      if (onSuccess) onSuccess();
-    }
-  });
-
-  const { execute: completeCar, loading: isCompleting } = useCompleteCar({
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-    }
-  });
-
-  const { execute: restoreCar, loading: isRestoring } = useRestoreCar({
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-    }
-  });
+  const { execute: fetchSessions } = useGetCarSessions({ onSuccess: (data) => setSessions(data) });
+  const { execute: createCar, loading: isCreating } = useCreateCar({ onSuccess: () => { if (onSuccess) onSuccess(); } });
+  const { execute: updateCar, loading: isUpdating } = useUpdateCar({ onSuccess: () => { if (onSuccess) onSuccess(); } });
+  const { execute: deleteCar, loading: isDeleting } = useDeleteCar({ onSuccess: () => { if (onDelete) onDelete(); if (onSuccess) onSuccess(); } });
+  const { execute: completeCar, loading: isCompleting } = useCompleteCar({ onSuccess: () => { if (onSuccess) onSuccess(); } });
+  const { execute: restoreCar, loading: isRestoring } = useRestoreCar({ onSuccess: () => { if (onSuccess) onSuccess(); } });
 
   const isSaving = isCreating || isUpdating || isDeleting || isCompleting || isRestoring;
 
@@ -60,9 +31,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
   }, [machine.id]);
 
   useEffect(() => {
-    if (!isNew && machine.id) {
-      fetchSessions(machine.id);
-    }
+    if (!isNew && machine.id) fetchSessions(machine.id);
   }, [machine.id, isNew]);
 
   const formatDuration = (mins) => {
@@ -71,48 +40,25 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
     return `${h}h ${m}m`;
   };
 
-  // Usa totalMinutes dal DB se disponibile, altrimenti somma le sessioni locali
   const totalMinutes = machine?.totalMinutes ?? sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
 
-  const handleDelete = async () => {
-    await deleteCar(machine.id);
-  };
-
-  const handleComplete = async () => {
-    await completeCar(machine.id);
-  };
-
-  const handleRestore = async () => {
-    await restoreCar(machine.id);
-  };
-
-  const handleSave = async () => {
-    if (isNew && (!model || !plate)) {
-      return toast.error('Modello e Targa sono obbligatori');
-    }
-
-    const carData = { model, plate, lavorazioni, note, photo, assicurazione };
-    
-    if (isNew) {
-      await createCar(carData);
-    } else {
-      await updateCar(machine.id, carData);
-    }
-  };
+  const inputClass = "px-3 py-3 w-full text-sm rounded-lg border outline-none bg-pink-50 border-pink-200 text-gray-900 focus:ring-2 focus:ring-pink-700 focus:border-transparent placeholder-gray-400";
+  const readonlyClass = "px-3 py-2.5 text-sm rounded-lg border text-gray-600 bg-pink-50 border-pink-100";
+  const labelClass = "block mb-1 text-xs font-bold text-pink-700 uppercase tracking-wide";
 
   return (
-    <div className="overflow-y-auto p-6 h-full rounded-lg border shadow-lg bg-brand-bg border-brand-text-700">
-      {/* Machine Header */}
-      <div className="flex justify-between items-start pb-4 mb-6 border-b border-brand-text-700">
+    <div className="overflow-y-auto p-6 h-full rounded-xl border shadow-md bg-white border-pink-200">
+      {/* Header */}
+      <div className="flex justify-between items-start pb-4 mb-6 border-b border-pink-100">
         <div>
           {isNew ? (
-            <h2 className="text-xl font-bold tracking-tight uppercase text-brand-text">Nuova Macchina</h2>
+            <h2 className="text-xl font-bold tracking-tight uppercase text-gray-900">Nuova Macchina</h2>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-brand-text">{machine.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{machine.name}</h2>
               <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                machine.status === 'in_progress' ? 'bg-green-100 text-green-700' : 
-                machine.status === 'completed' ? 'bg-brand-text-100 text-brand-text-700' : 'bg-brand-bg-100 text-brand-text-600'
+                machine.status === 'in_progress' ? 'bg-green-100 text-green-700' :
+                'bg-pink-100 text-pink-700'
               }`}>
                 {machine.status === 'in_progress' ? 'In Lavorazione' : 'Completato'}
               </span>
@@ -120,7 +66,7 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           )}
         </div>
         {isNew && (
-          <button onClick={onCancel} className="text-brand-text-400 hover:text-brand-text-600">
+          <button onClick={onCancel} className="p-2.5 -mr-2.5 text-gray-300 hover:text-pink-600 active:bg-pink-50 rounded-lg transition-colors cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -129,117 +75,121 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
       </div>
 
       <div className="space-y-4">
-        {/* Basic Info (only for new or if admin wants to edit) */}
         {(isNew || admin) && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Modello:</label>
+              <label className={labelClass}>Modello:</label>
               <input
                 type="text"
                 value={model}
                 onChange={(e) => setModel(e.target.value.toUpperCase())}
-                className="px-3 py-2 w-full text-sm rounded-lg border outline-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
+                className={inputClass}
                 placeholder="es. Huracan"
               />
             </div>
             <div>
-              <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Targa:</label>
+              <label className={labelClass}>Targa:</label>
               <input
                 type="text"
                 value={plate}
                 onChange={(e) => setPlate(e.target.value.toUpperCase())}
-                className="px-3 py-2 w-full text-sm rounded-lg border outline-none border-brand-text/30 text-brand-text focus:ring-2 focus:ring-brand-text focus:border-transparent"
+                className={inputClass}
                 placeholder="es. AA123BB"
               />
             </div>
           </div>
         )}
 
-        {/* Lavorazioni */}
         <div>
-          <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">Lavorazioni:</label>
+          <label className={labelClass}>Lavorazioni:</label>
           {admin || isNew ? (
             <textarea
               value={lavorazioni}
               onChange={(e) => setLavorazioni(e.target.value)}
-              className="px-3 py-2 w-full text-sm rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
+              className={inputClass}
               rows="3"
               placeholder="es. Verniciatura, lucidatura..."
             />
           ) : (
-            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{lavorazioni || 'Nessuna lavorazione'}</p>
+            <p className={readonlyClass}>{lavorazioni || 'Nessuna lavorazione'}</p>
           )}
         </div>
-        {/* Foto and Assicurazione */}
+
         <div className="grid grid-cols-2 gap-4">
-          <div className='flex gap-4 justify-start items-center'>
-            <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Foto:</label>
+          <div>
             {admin || isNew ? (
-              <input
-                type="checkbox"
-                checked={photo}
-                onChange={(e) => setPhoto(e.target.checked)}
-                className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
-              />
+              <label className="flex gap-3 items-center min-h-[44px] cursor-pointer">
+                <span className="text-xs font-bold text-pink-700 uppercase tracking-wide">Foto:</span>
+                <input
+                  type="checkbox"
+                  checked={photo}
+                  onChange={(e) => setPhoto(e.target.checked)}
+                  className="w-5 h-5 accent-pink-700 cursor-pointer"
+                />
+              </label>
             ) : (
-              <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{photo ? 'Si' : 'No'}</p>
+              <div className="flex gap-3 items-center">
+                <span className="text-xs font-bold text-pink-700 uppercase tracking-wide">Foto:</span>
+                <span className={`${readonlyClass} text-xs`}>{photo ? 'Sì' : 'No'}</span>
+              </div>
             )}
           </div>
-          <div className='flex gap-4 justify-start items-center'>
-            <label className="block text-[12px] font-bold text-brand-text-700 uppercase">Assicurazione:</label>
+          <div>
             {admin || isNew ? (
-              <input
-                type="checkbox"
-                checked={assicurazione}
-                onChange={(e) => setAssicurazione(e.target.checked)}
-                className="px-3 py-2 text-sm rounded-lg border outline-none border-brand-text-300 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
-              />
+              <label className="flex gap-3 items-center min-h-[44px] cursor-pointer">
+                <span className="text-xs font-bold text-pink-700 uppercase tracking-wide">Assicurazione:</span>
+                <input
+                  type="checkbox"
+                  checked={assicurazione}
+                  onChange={(e) => setAssicurazione(e.target.checked)}
+                  className="w-5 h-5 accent-pink-700 cursor-pointer"
+                />
+              </label>
             ) : (
-              <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{assicurazione ? 'Si' : 'No'}</p>
+              <div className="flex gap-3 items-center">
+                <span className="text-xs font-bold text-pink-700 uppercase tracking-wide">Assicurazione:</span>
+                <span className={`${readonlyClass} text-xs`}>{assicurazione ? 'Sì' : 'No'}</span>
+              </div>
             )}
           </div>
         </div>
-        {/* Note */}
+
         <div>
-          <label className="block mb-1 text-[10px] font-bold text-brand-text-700 uppercase">
-            Note:
-          </label>
+          <label className={labelClass}>Note:</label>
           {operator ? (
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="px-3 py-2 w-full text-sm rounded-lg border outline-none resize-none border-brand-text-300 bg-brand-bg-50 text-brand-text-800 focus:ring-2 focus:ring-brand-text-700 focus:border-transparent"
+              className={inputClass}
               rows="3"
             />
           ) : (
-            <p className="px-3 py-2 text-sm rounded-lg border text-brand-text-700 bg-brand-bg-50 border-brand-text-100">{note || 'Nessuna nota'}</p>
+            <p className={readonlyClass}>{note || 'Nessuna nota'}</p>
           )}
         </div>
 
-        {/* Total Time - Only if not new */}
         {!isNew && (
-          <div className="pt-4 border-t border-brand-text-700">
+          <div className="pt-4 border-t border-pink-100">
             <div className="flex justify-between items-center mb-4">
-              <label className="text-[10px] font-bold text-brand-text/50 uppercase">Tempo Totale Lavorazione:</label>
-              <span className="text-xl font-bold text-brand-text">{formatDuration(totalMinutes)}</span>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Tempo Totale Lavorazione:</label>
+              <span className="text-xl font-bold text-pink-700">{formatDuration(totalMinutes)}</span>
             </div>
-            
-            {/* Session History */}
+
             <div className="space-y-2">
-              <label className="block text-[10px] font-bold text-brand-text-700 uppercase mb-2">Dettaglio Lavoratori:</label>
+              <label className={`${labelClass} mb-2`}>Dettaglio Lavoratori:</label>
               <div className="overflow-y-auto pr-2 space-y-2 max-h-40">
                 {sessions.length === 0 ? (
-                  <p className="text-xs italic text-brand-text-700">Nessuna sessione registrata</p>
+                  <p className="text-xs italic text-gray-400">Nessuna sessione registrata</p>
                 ) : (
                   sessions.map((session) => (
-                    <div key={session.id} className="flex justify-between items-center p-2 rounded-lg border bg-brand-bg-300 border-brand-text-700">
+                    <div key={session.id} className="flex justify-between items-center p-2.5 rounded-lg border bg-pink-50 border-pink-100">
                       <div>
-                        <p className="text-xs font-bold text-brand-text-700">{session.operatorName}</p>
-                        <p className="text-[10px] text-brand-text-700">
-                          {new Date(session.startTime).toLocaleDateString()} {new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        <p className="text-xs font-bold text-gray-900">{session.operatorName}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(session.startTime).toLocaleDateString()} {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
-                      <span className="text-xs font-semibold text-brand-text-600">
+                      <span className="text-xs font-semibold text-pink-700">
                         {session.durationMinutes ? formatDuration(session.durationMinutes) : 'In corso...'}
                       </span>
                     </div>
@@ -256,16 +206,16 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           {isNew && (
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-3 text-xs font-bold tracking-wider uppercase rounded-xl transition text-brand-text-700 bg-brand-bg-100 hover:bg-brand-bg-200"
+              className="flex-1 px-4 py-3 text-xs font-bold tracking-wider uppercase rounded-xl transition text-pink-700 bg-pink-50 hover:bg-pink-100 cursor-pointer"
             >
               Annulla
             </button>
           )}
           {admin && !isNew && (
             <button
-              onClick={handleDelete}
+              onClick={() => deleteCar(machine.id)}
               disabled={isSaving}
-              className="p-3 text-red-600 bg-red-50 rounded-xl border border-red-100 shadow-sm transition hover:bg-red-100 disabled:opacity-50"
+              className="p-3 text-red-600 bg-red-50 rounded-xl border border-red-100 shadow-sm transition hover:bg-red-100 disabled:opacity-50 cursor-pointer"
               title="Elimina Macchina"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -274,17 +224,22 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
             </button>
           )}
           <button
-            onClick={handleSave}
+            onClick={async () => {
+              if (isNew && (!model || !plate)) return toast.error('Modello e Targa sono obbligatori');
+              const carData = { model, plate, lavorazioni, note, photo, assicurazione };
+              if (isNew) await createCar(carData);
+              else await updateCar(machine.id, carData);
+            }}
             disabled={isSaving}
-            className="px-4 py-3 flex-[2] font-bold text-brand-bg bg-brand-text rounded-xl transition hover:opacity-90 disabled:opacity-50 uppercase text-xs tracking-wider shadow-md"
+            className="px-4 py-3 flex-[2] font-bold text-white bg-pink-700 rounded-xl transition hover:bg-pink-800 disabled:opacity-50 uppercase text-xs tracking-wider shadow-md cursor-pointer"
           >
             {isSaving ? 'Salvataggio...' : isNew ? 'Crea Macchina' : 'Salva Modifiche'}
           </button>
           {!isNew && machine.status !== 'completed' && (
             <button
-              onClick={handleComplete}
+              onClick={() => completeCar(machine.id)}
               disabled={isSaving}
-              className="p-3 text-green-600 bg-green-50 rounded-xl border border-green-100 shadow-sm transition hover:bg-green-100 disabled:opacity-50"
+              className="p-3 text-green-600 bg-green-50 rounded-xl border border-green-100 shadow-sm transition hover:bg-green-100 disabled:opacity-50 cursor-pointer"
               title="Segna come Completata"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -294,9 +249,9 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
           )}
           {!isNew && machine.status === 'completed' && (
             <button
-              onClick={handleRestore}
+              onClick={() => restoreCar(machine.id)}
               disabled={isSaving}
-              className="p-3 text-orange-600 bg-orange-50 rounded-xl border border-orange-100 shadow-sm transition hover:bg-orange-100 disabled:opacity-50"
+              className="p-3 text-orange-600 bg-orange-50 rounded-xl border border-orange-100 shadow-sm transition hover:bg-orange-100 disabled:opacity-50 cursor-pointer"
               title="Riporta in Lavorazione"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -311,4 +266,3 @@ const MachineCard = ({ machine = {}, admin, operator, isNew = false, onCancel, o
 };
 
 export default MachineCard;
-
