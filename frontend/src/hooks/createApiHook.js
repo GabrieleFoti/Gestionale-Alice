@@ -21,6 +21,10 @@ export function createApiHook(url, options = {}) {
     const [error, setError] = useState(null);
     const [data, setData] = useState(null);
     const abortRef = useRef(null);
+    const onSuccessRef = useRef(onSuccess);
+    onSuccessRef.current = onSuccess;
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
     useEffect(() => {
       return () => { abortRef.current?.abort(); };
@@ -51,18 +55,18 @@ export function createApiHook(url, options = {}) {
         const result = await response.json();
         setData(result);
         if (successMessage) toast.success(successMessage);
-        if (onSuccess) onSuccess(result);
+        if (onSuccessRef.current) onSuccessRef.current(result);
         return result;
       } catch (err) {
         if (err.name === 'AbortError') return;
         setError(err.message);
-        if (onError) onError(err);
+        if (onErrorRef.current) onErrorRef.current(err);
         else toast.error(err.message);
         throw err;
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
-    }, [onSuccess, onError]);
+    }, []); // stabile — onSuccess/onError accessibili via ref
 
     return { execute, loading, error, data };
   };
