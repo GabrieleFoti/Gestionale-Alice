@@ -15,7 +15,8 @@ const toApiModel = (item) => ({
     note: item.note,
     totalMinutes: item.totalMinutes ?? 0,
     photo: item.photo,
-    assicurazione: item.assicurazione
+    assicurazione: item.assicurazione,
+    archivedAt: item.archivedAt
 });
 
 export default function carService() {
@@ -62,7 +63,9 @@ export default function carService() {
         if(!req.user || !id) throw new Error('User not logged in or invalid id');
         // Get existing to preserve unspecified fields
         const car = await getById(req, id);
-        const updatedItem = toCarItem({ ...car, ...data, id });
+        const becomingCompleted = data.status === 'completed' && car.status !== 'completed';
+        const archivedAt = becomingCompleted ? new Date().toISOString() : car.archivedAt;
+        const updatedItem = toCarItem({ ...car, ...data, id, archivedAt });
         await ddbDocClient.send(new PutCommand({
             TableName: TABLE_NAME,
             Item: updatedItem

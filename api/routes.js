@@ -8,17 +8,17 @@ export default function routes(services) {
       requireAuth: false,
       requiredBody: ['username', 'password']
     },
-    
+
     // Car routes
-    { 
-      path: '/api/cars', 
-      method: 'GET', 
+    {
+      path: '/api/cars',
+      method: 'GET',
       handler: (req) => services.cars.getAll(req),
       requireAuth: true
     },
-    { 
-      path: '/api/cars/:id', 
-      method: 'GET', 
+    {
+      path: '/api/cars/:id',
+      method: 'GET',
       handler: (req) => services.cars.getById(req, req.params.id),
       requireAuth: true
     },
@@ -27,7 +27,6 @@ export default function routes(services) {
       method: 'POST',
       handler: (req) => services.cars.create(req, req.body),
       requireAuth: true,
-      requireAdmin: true,
       requiredBody: ['model', 'plate']
     },
     {
@@ -44,7 +43,7 @@ export default function routes(services) {
       requireAuth: true,
       requireAdmin: true
     },
-    
+
     // Work Session routes
     {
       path: '/api/sessions/start',

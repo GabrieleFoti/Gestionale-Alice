@@ -18,16 +18,28 @@ const ArchivioView = () => {
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [machines, setMachines] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { execute: fetchMachines, loading: isLoading } = useGetCars({
     onSuccess: (data) => {
-      const completed = data.filter(m => m.status === 'completed');
+      const completed = data
+        .filter(m => m.status === 'completed')
+        .sort((a, b) => new Date(b.archivedAt || 0) - new Date(a.archivedAt || 0));
       setMachines(completed);
       if (selectedMachine && !completed.find(m => m.id === selectedMachine.id)) {
         setSelectedMachine(null);
         setShowDetail(false);
       }
     }
+  });
+
+  const filteredMachines = machines.filter((machine) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    return (
+      machine.plate?.toLowerCase().includes(query) ||
+      machine.model?.toLowerCase().includes(query)
+    );
   });
 
   useEffect(() => {
@@ -54,16 +66,23 @@ const ArchivioView = () => {
 
   const machineList = (
     <div className="bg-white rounded-xl shadow-md h-full flex flex-col border border-pink-200">
-      <div className="p-4 border-b border-pink-200">
+      <div className="p-4 border-b border-pink-200 space-y-3">
         <h2 className="text-lg font-semibold text-gray-900">Macchine Completate</h2>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Cerca per targa o modello..."
+          className="w-full px-3 py-2 min-h-[44px] text-sm border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+        />
       </div>
       <div className="overflow-y-auto flex-grow divide-y divide-pink-100">
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
             <div className="w-8 h-8 rounded-full border-b-2 border-pink-700 animate-spin"></div>
           </div>
-        ) : machines.length > 0 ? (
-          machines.map((machine) => (
+        ) : filteredMachines.length > 0 ? (
+          filteredMachines.map((machine) => (
             <button
               key={machine.id}
               onClick={() => handleMachineSelect(machine)}
@@ -86,7 +105,7 @@ const ArchivioView = () => {
           ))
         ) : (
           <div className="p-8 text-center text-gray-400">
-            <p>Nessuna macchina completata</p>
+            <p>{searchQuery ? 'Nessun risultato' : 'Nessuna macchina completata'}</p>
           </div>
         )}
       </div>
