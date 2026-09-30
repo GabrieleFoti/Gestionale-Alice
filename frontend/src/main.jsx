@@ -22,8 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <BrowserRouter>
           <App />
-          <Toaster 
-            position="top-right"
+          <Toaster
+            position="top-center"
             toastOptions={{
               duration: 3000,
               style: {
