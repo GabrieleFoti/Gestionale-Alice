@@ -6,6 +6,8 @@ import { USER_PK_PREFIX, USER_SK_PREFIX } from '../entities/user.js';
 import { checkRateLimit, recordFailedAttempt, clearRateLimit } from './rateLimitService.js';
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'PanzaniDesign';
+// Durata della sessione: 30 giorni di default, sovrascrivibile con JWT_EXPIRES_IN (es. '7d', '12h').
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 export default function authService() {
     const JWT_SECRET = process.env.JWT_SECRET;
@@ -39,7 +41,7 @@ export default function authService() {
             const token = jwt.sign(
                 { id: user.PK, username: user.username, role: user.role },
                 JWT_SECRET,
-                { expiresIn: '8h' }
+                { expiresIn: JWT_EXPIRES_IN }
             );
 
             return { token, user: { username: user.username, role: user.role } };

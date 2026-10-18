@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../utils/constants';
+import { AUTH_EXPIRED_EVENT, isTokenExpired } from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -11,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     const storedUser = localStorage.getItem('authUser');
-    if (token && storedUser) {
+    if (token && storedUser && !isTokenExpired(token)) {
       try {
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
@@ -19,6 +21,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
       }
+    } else {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
     }
     setLoading(false);
   }, []);
@@ -43,12 +48,23 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
     setIsAuthenticated(false);
     setUser(null);
-  };
+  }, []);
+
+  // Un 401 da qualsiasi chiamata API (token scaduto/non valido) chiude la sessione.
+  useEffect(() => {
+    const onExpired = () => {
+      if (!localStorage.getItem('authToken')) return; // già disconnesso
+      logout();
+      toast.error('Sessione scaduta, effettua di nuovo il login', { id: 'session-expired' });
+    };
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{
